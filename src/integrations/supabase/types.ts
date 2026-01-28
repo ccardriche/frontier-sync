@@ -648,6 +648,84 @@ export type Database = {
         }
         Relationships: []
       }
+      recurring_job_templates: {
+        Row: {
+          budget_cents: number | null
+          cadence: string
+          cargo_details: Json | null
+          cargo_type: Database["public"]["Enums"]["cargo_type"] | null
+          created_at: string
+          days_of_week: number[] | null
+          drop_label: string | null
+          drop_lat: number | null
+          drop_lng: number | null
+          id: string
+          is_active: boolean | null
+          last_run_date: string | null
+          next_run_date: string | null
+          pickup_label: string | null
+          pickup_lat: number | null
+          pickup_lng: number | null
+          preferred_time: string | null
+          shipper_id: string
+          title: string
+          total_jobs_created: number | null
+          updated_at: string
+          urgency: boolean | null
+          weight_kg: number | null
+        }
+        Insert: {
+          budget_cents?: number | null
+          cadence: string
+          cargo_details?: Json | null
+          cargo_type?: Database["public"]["Enums"]["cargo_type"] | null
+          created_at?: string
+          days_of_week?: number[] | null
+          drop_label?: string | null
+          drop_lat?: number | null
+          drop_lng?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_run_date?: string | null
+          next_run_date?: string | null
+          pickup_label?: string | null
+          pickup_lat?: number | null
+          pickup_lng?: number | null
+          preferred_time?: string | null
+          shipper_id: string
+          title: string
+          total_jobs_created?: number | null
+          updated_at?: string
+          urgency?: boolean | null
+          weight_kg?: number | null
+        }
+        Update: {
+          budget_cents?: number | null
+          cadence?: string
+          cargo_details?: Json | null
+          cargo_type?: Database["public"]["Enums"]["cargo_type"] | null
+          created_at?: string
+          days_of_week?: number[] | null
+          drop_label?: string | null
+          drop_lat?: number | null
+          drop_lng?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_run_date?: string | null
+          next_run_date?: string | null
+          pickup_label?: string | null
+          pickup_lat?: number | null
+          pickup_lng?: number | null
+          preferred_time?: string | null
+          shipper_id?: string
+          title?: string
+          total_jobs_created?: number | null
+          updated_at?: string
+          urgency?: boolean | null
+          weight_kg?: number | null
+        }
+        Relationships: []
+      }
       saved_locations: {
         Row: {
           created_at: string
