@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
 import { toast } from "@/hooks/use-toast";
+import { mockBids, DEMO_MODE } from "@/lib/seedData";
 
 interface BidWithDriver extends Tables<"bids"> {
   driver_profile: {
@@ -17,6 +18,29 @@ export const useJobBids = (jobId: string | null) => {
     queryKey: ["job-bids", jobId],
     queryFn: async (): Promise<BidWithDriver[]> => {
       if (!jobId) return [];
+
+      // Return demo data if demo mode
+      if (DEMO_MODE) {
+        const demoBids = mockBids
+          .filter((b) => b.job_id === jobId)
+          .map((b) => ({
+            id: b.id,
+            job_id: b.job_id,
+            driver_id: b.driver_id,
+            amount_cents: b.amount_cents,
+            eta_minutes: b.eta_minutes,
+            status: b.status,
+            note: b.note,
+            created_at: b.created_at,
+            driver_profile: {
+              full_name: b.driver_name,
+              rating: b.driver_rating,
+              avatar_url: null,
+              phone: b.driver_phone,
+            },
+          }));
+        return demoBids as BidWithDriver[];
+      }
 
       // Fetch active bids for the job
       const { data: bids, error } = await supabase

@@ -1,7 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Tables } from "@/integrations/supabase/types";
 import { startOfWeek, startOfMonth, subMonths, format, eachDayOfInterval, subDays } from "date-fns";
+import {
+  mockEarningsSummary,
+  mockCompletedJobs,
+  mockTransactions,
+  mockDailyEarnings,
+  mockMonthlyEarnings,
+  mockCheckins,
+  DEMO_MODE,
+} from "@/lib/seedData";
 
 export interface EarningsSummary {
   totalEarnings: number;
@@ -53,17 +61,10 @@ export const useDriverEarnings = () => {
     queryKey: ["driver-earnings"],
     queryFn: async (): Promise<EarningsSummary> => {
       const { data: user } = await supabase.auth.getUser();
-      if (!user.user) {
-        return {
-          totalEarnings: 0,
-          jobEarnings: 0,
-          hubFees: 0,
-          tips: 0,
-          weeklyEarnings: 0,
-          monthlyEarnings: 0,
-          pendingPayouts: 0,
-          completedPayouts: 0,
-        };
+      
+      // Return demo data if no user or demo mode
+      if (!user.user || DEMO_MODE) {
+        return mockEarningsSummary;
       }
 
       const now = new Date();
@@ -112,6 +113,7 @@ export const useDriverEarnings = () => {
       }
 
       // Get hub fees (expenses for driver)
+
       const { data: checkins } = await supabase
         .from("hub_checkins")
         .select("fee_charged_cents")
@@ -120,6 +122,7 @@ export const useDriverEarnings = () => {
       const hubFees = checkins?.reduce((sum, c) => sum + (c.fee_charged_cents || 0), 0) || 0;
 
       // Get transactions for tips and payouts
+
       const { data: transactions } = await supabase
         .from("transactions")
         .select("*")
@@ -156,7 +159,11 @@ export const useCompletedJobs = () => {
     queryKey: ["driver-completed-jobs"],
     queryFn: async (): Promise<CompletedJobEarning[]> => {
       const { data: user } = await supabase.auth.getUser();
-      if (!user.user) return [];
+      
+      // Return demo data if no user or demo mode
+      if (!user.user || DEMO_MODE) {
+        return mockCompletedJobs;
+      }
 
       const { data: assignments } = await supabase
         .from("assignments")
@@ -206,7 +213,19 @@ export const useHubFeeHistory = () => {
     queryKey: ["driver-hub-fees"],
     queryFn: async (): Promise<HubFeeRecord[]> => {
       const { data: user } = await supabase.auth.getUser();
-      if (!user.user) return [];
+      
+      // Return demo data if no user or demo mode
+      if (!user.user || DEMO_MODE) {
+        return mockCheckins
+          .filter((c) => c.fee_charged_cents > 0)
+          .map((c) => ({
+            id: c.id,
+            hubName: c.hub_name,
+            eventType: c.event_type,
+            feeCharged: c.fee_charged_cents,
+            createdAt: c.created_at,
+          }));
+      }
 
       const { data: checkins } = await supabase
         .from("hub_checkins")
@@ -241,7 +260,19 @@ export const useTransactionHistory = () => {
     queryKey: ["driver-transactions"],
     queryFn: async (): Promise<TransactionRecord[]> => {
       const { data: user } = await supabase.auth.getUser();
-      if (!user.user) return [];
+      
+      // Return demo data if no user or demo mode
+      if (!user.user || DEMO_MODE) {
+        return mockTransactions.map((t) => ({
+          id: t.id,
+          amount: t.amount_cents,
+          direction: t.direction,
+          description: t.description,
+          createdAt: t.created_at,
+          jobId: t.job_id,
+          hubId: t.hub_id,
+        }));
+      }
 
       const { data: transactions } = await supabase
         .from("transactions")
@@ -263,13 +294,16 @@ export const useTransactionHistory = () => {
     },
   });
 };
-
 export const useDailyEarningsChart = () => {
   return useQuery({
     queryKey: ["driver-daily-earnings"],
     queryFn: async (): Promise<DailyEarning[]> => {
       const { data: user } = await supabase.auth.getUser();
-      if (!user.user) return [];
+      
+      // Return demo data if no user or demo mode
+      if (!user.user || DEMO_MODE) {
+        return mockDailyEarnings;
+      }
 
       const endDate = new Date();
       const startDate = subDays(endDate, 30);
@@ -331,7 +365,11 @@ export const useMonthlyEarningsChart = () => {
     queryKey: ["driver-monthly-earnings"],
     queryFn: async () => {
       const { data: user } = await supabase.auth.getUser();
-      if (!user.user) return [];
+      
+      // Return demo data if no user or demo mode
+      if (!user.user || DEMO_MODE) {
+        return mockMonthlyEarnings;
+      }
 
       const endDate = new Date();
       const startDate = subMonths(endDate, 6);

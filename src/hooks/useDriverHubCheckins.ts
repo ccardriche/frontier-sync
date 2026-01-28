@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
 import { toast } from "@/hooks/use-toast";
+import { mockHubs, mockCheckins, DEMO_MODE } from "@/lib/seedData";
 
 export type HubCheckin = Tables<"hub_checkins">;
 export type HubListing = Tables<"hub_listings">;
@@ -20,6 +21,19 @@ export const useNearbyHubs = (userLat?: number, userLng?: number) => {
   return useQuery({
     queryKey: ["nearby-hubs", userLat, userLng],
     queryFn: async (): Promise<HubWithDistance[]> => {
+      // Return demo data if demo mode
+      if (DEMO_MODE) {
+        const demoHubs = mockHubs.map((hub) => ({
+          ...hub,
+          geojson: null,
+          verification_docs: null,
+          distance_km: userLat && userLng && hub.lat && hub.lng
+            ? calculateDistance(userLat, userLng, hub.lat, hub.lng)
+            : Math.random() * 10 + 1,
+        })) as HubWithDistance[];
+        return demoHubs.sort((a, b) => (a.distance_km ?? Infinity) - (b.distance_km ?? Infinity));
+      }
+
       const { data: hubs, error } = await supabase
         .from("hub_listings")
         .select("*")
@@ -169,7 +183,15 @@ export const useDriverCheckinHistory = () => {
     queryKey: ["driver-checkin-history"],
     queryFn: async () => {
       const { data: user } = await supabase.auth.getUser();
-      if (!user.user) return [];
+      
+      // Return demo data if no user or demo mode
+      if (!user.user || DEMO_MODE) {
+        return mockCheckins.map((c) => ({
+          ...c,
+          job_id: null,
+          hub: mockHubs.find((h) => h.id === c.hub_id),
+        }));
+      }
 
       const { data: checkins, error } = await supabase
         .from("hub_checkins")

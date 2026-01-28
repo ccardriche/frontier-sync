@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 import { toast } from "@/hooks/use-toast";
+import { mockHubs, mockLandownerStats, mockCheckins, DEMO_MODE } from "@/lib/seedData";
 
 export type HubListing = Tables<"hub_listings">;
 export type HubListingInsert = TablesInsert<"hub_listings">;
@@ -45,11 +46,18 @@ export const useLandownerHubs = () => {
     queryKey: ["landowner-hubs"],
     queryFn: async (): Promise<HubWithStats[]> => {
       const { data: user } = await supabase.auth.getUser();
-      if (!user.user) {
-        return [];
+      
+      // Return demo data if no user or demo mode
+      if (!user.user || DEMO_MODE) {
+        return mockHubs.map((hub) => ({
+          ...hub,
+          checkins_today: Math.floor(Math.random() * 10) + 2,
+          monthly_earnings: Math.floor(Math.random() * 5000000) + 1000000,
+          current_occupancy: Math.floor(Math.random() * 20) + 5,
+          geojson: null,
+          verification_docs: null,
+        })) as HubWithStats[];
       }
-
-      // Fetch hubs for the current landowner
       const { data: hubs, error } = await supabase
         .from("hub_listings")
         .select("*")
@@ -230,8 +238,21 @@ export const useHubActivity = (hubId?: string) => {
     queryKey: ["hub-activity", hubId],
     queryFn: async (): Promise<HubCheckin[]> => {
       const { data: user } = await supabase.auth.getUser();
-      if (!user.user) {
-        return [];
+      
+      // Return demo data if no user or demo mode
+      if (!user.user || DEMO_MODE) {
+        const demoActivity = mockCheckins
+          .filter((c) => !hubId || c.hub_id === hubId)
+          .map((c) => ({
+            id: c.id,
+            hub_id: c.hub_id,
+            user_id: c.user_id,
+            event_type: c.event_type,
+            fee_charged_cents: c.fee_charged_cents,
+            created_at: c.created_at,
+            job_id: null,
+          }));
+        return demoActivity as HubCheckin[];
       }
 
       let query = supabase
@@ -262,8 +283,10 @@ export const useLandownerStats = () => {
     queryKey: ["landowner-stats"],
     queryFn: async () => {
       const { data: user } = await supabase.auth.getUser();
-      if (!user.user) {
-        return { activeHubs: 0, monthlyEarnings: 0, totalCheckins: 0, growthPercent: 0 };
+      
+      // Return demo data if no user or demo mode
+      if (!user.user || DEMO_MODE) {
+        return mockLandownerStats;
       }
 
       // Get active hubs count

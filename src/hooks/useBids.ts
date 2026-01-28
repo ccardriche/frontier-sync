@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables, TablesInsert } from "@/integrations/supabase/types";
 import { toast } from "@/hooks/use-toast";
+import { mockJobs, mockDriverStats, DEMO_MODE } from "@/lib/seedData";
 
 export type Bid = Tables<"bids">;
 export type BidInsert = TablesInsert<"bids">;
@@ -54,6 +55,23 @@ export const useAvailableJobs = () => {
   return useQuery({
     queryKey: ["available-jobs"],
     queryFn: async (): Promise<JobWithShipper[]> => {
+      const { data: user } = await supabase.auth.getUser();
+
+      // Return demo data if no user or demo mode
+      if (!user.user || DEMO_MODE) {
+        const availableJobs = mockJobs.filter((j) => 
+          j.status === "posted" || j.status === "bidding"
+        );
+        return availableJobs.map((job) => ({
+          ...job,
+          cargo_details: null,
+          shipper_profile: {
+            full_name: "ABC Logistics Ltd",
+            rating: 4.8,
+          },
+        })) as JobWithShipper[];
+      }
+
       // Get jobs that are open for bidding (posted or bidding status)
       const { data: jobs, error } = await supabase
         .from("jobs")
@@ -200,8 +218,10 @@ export const useDriverStats = () => {
     queryKey: ["driver-stats"],
     queryFn: async () => {
       const { data: user } = await supabase.auth.getUser();
-      if (!user.user) {
-        return { availableJobs: 0, weeklyEarnings: 0, rating: 0, completedJobs: 0, walletBalance: 0 };
+      
+      // Return demo data if no user or demo mode
+      if (!user.user || DEMO_MODE) {
+        return mockDriverStats;
       }
 
       // Get available jobs count
@@ -259,7 +279,22 @@ export const useActiveAssignment = () => {
     queryKey: ["active-assignment"],
     queryFn: async () => {
       const { data: user } = await supabase.auth.getUser();
-      if (!user.user) {
+      
+      // Return demo active assignment if demo mode
+      if (!user.user || DEMO_MODE) {
+        const inTransitJob = mockJobs.find((j) => j.status === "in_transit");
+        if (inTransitJob) {
+          return {
+            id: "demo-assignment-001",
+            driver_id: "demo-driver",
+            job_id: inTransitJob.id,
+            bid_id: "demo-bid",
+            started_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+            completed_at: null,
+            created_at: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
+            job: inTransitJob,
+          };
+        }
         return null;
       }
 

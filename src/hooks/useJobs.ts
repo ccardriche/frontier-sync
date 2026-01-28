@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables, TablesInsert } from "@/integrations/supabase/types";
 import { toast } from "@/hooks/use-toast";
+import { mockJobs, DEMO_MODE } from "@/lib/seedData";
 
 export type Job = Tables<"jobs">;
 export type JobInsert = TablesInsert<"jobs">;
@@ -42,8 +43,14 @@ export const useShipperJobs = () => {
     queryKey: ["shipper-jobs"],
     queryFn: async (): Promise<JobWithBidCount[]> => {
       const { data: user } = await supabase.auth.getUser();
-      if (!user.user) {
-        return [];
+      
+      // Return demo data if no user or demo mode
+      if (!user.user || DEMO_MODE) {
+        return mockJobs.map((job) => ({
+          ...job,
+          bids_count: job.status === "bidding" ? 3 : job.status === "posted" ? 1 : 0,
+          cargo_details: null,
+        })) as JobWithBidCount[];
       }
 
       // Fetch jobs for the current shipper
@@ -138,8 +145,10 @@ export const useJobStats = () => {
     queryKey: ["shipper-job-stats"],
     queryFn: async () => {
       const { data: user } = await supabase.auth.getUser();
-      if (!user.user) {
-        return { activeJobs: 0, inTransit: 0, completed: 0, totalSpent: 0 };
+      
+      // Return demo stats if no user or demo mode
+      if (!user.user || DEMO_MODE) {
+        return { activeJobs: 3, inTransit: 2, completed: 45, totalSpent: 85000000 };
       }
 
       const { data: jobs, error } = await supabase

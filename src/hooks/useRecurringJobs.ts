@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Json } from "@/integrations/supabase/types";
+import { mockRecurringRoutes, DEMO_MODE } from "@/lib/seedData";
 
 export interface RecurringJobTemplate {
   id: string;
@@ -88,7 +89,35 @@ export const useRecurringTemplates = () => {
     queryKey: ["recurring-templates"],
     queryFn: async (): Promise<RecurringJobTemplate[]> => {
       const { data: user } = await supabase.auth.getUser();
-      if (!user.user) return [];
+      
+      // Return demo data if no user or demo mode
+      if (!user.user || DEMO_MODE) {
+        return mockRecurringRoutes.map((r) => ({
+          id: r.id,
+          shipper_id: "demo-shipper",
+          title: r.title,
+          cargo_type: null,
+          cargo_details: null,
+          pickup_label: r.pickup_label,
+          pickup_lat: null,
+          pickup_lng: null,
+          drop_label: r.drop_label,
+          drop_lat: null,
+          drop_lng: null,
+          weight_kg: null,
+          budget_cents: r.budget_cents,
+          urgency: false,
+          cadence: r.cadence as "daily" | "weekly" | "biweekly" | "monthly",
+          days_of_week: r.days_of_week || [],
+          preferred_time: null,
+          is_active: r.is_active,
+          next_run_date: r.next_run_date,
+          last_run_date: null,
+          total_jobs_created: r.total_jobs_created,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })) as RecurringJobTemplate[];
+      }
 
       // Direct query since types haven't regenerated yet
       const { data, error } = await (supabase as any)
