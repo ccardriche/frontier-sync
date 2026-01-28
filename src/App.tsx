@@ -8,6 +8,7 @@ import RoleSelection from "./pages/RoleSelection";
 import ShipperDashboard from "./pages/ShipperDashboard";
 import DriverDashboard from "./pages/DriverDashboard";
 import LandownerDashboard from "./pages/LandownerDashboard";
+import AdminDashboard from "./pages/AdminDashboard";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
@@ -29,6 +30,7 @@ const App = () => (
           <Route path="/dashboard/shipper" element={<ShipperDashboard />} />
           <Route path="/dashboard/driver" element={<DriverDashboard />} />
           <Route path="/dashboard/landowner" element={<LandownerDashboard />} />
+          <Route path="/dashboard/admin" element={<AdminDashboard />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
