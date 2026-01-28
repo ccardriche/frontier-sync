@@ -11,9 +11,11 @@ import AIAssistant from "@/components/AIAssistant";
 import DriverStatsGrid from "@/components/driver/DriverStatsGrid";
 import ActiveJobBanner from "@/components/driver/ActiveJobBanner";
 import AvailableJobCard from "@/components/driver/AvailableJobCard";
+import ActiveCheckinBanner from "@/components/driver/ActiveCheckinBanner";
+import NearbyHubsSection from "@/components/driver/NearbyHubsSection";
+import CheckinHistorySheet from "@/components/driver/CheckinHistorySheet";
 import { useAvailableJobs, useDriverStats } from "@/hooks/useBids";
 import { useDriverJobNotifications } from "@/hooks/useJobStatusNotifications";
-
 const DriverDashboard = () => {
   const [selectedJob, setSelectedJob] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -60,11 +62,17 @@ const DriverDashboard = () => {
       </header>
 
       <main className="container px-4 py-8">
+        {/* Active Check-in Banner */}
+        <ActiveCheckinBanner />
+
         {/* Active Job Banner */}
         <ActiveJobBanner />
 
         {/* Stats Grid */}
         <DriverStatsGrid />
+
+        {/* Nearby Hubs Section */}
+        <NearbyHubsSection />
 
         {/* Available Jobs */}
         <motion.div
@@ -75,6 +83,7 @@ const DriverDashboard = () => {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-2xl font-display font-bold">Available Jobs</h2>
             <div className="flex gap-2">
+              <CheckinHistorySheet />
               <Input
                 placeholder="Search..."
                 className="w-48"
