@@ -9,15 +9,18 @@ import {
   Truck, 
   CheckCircle,
   Loader2,
-  Phone
+  Phone,
+  Radio
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useActiveAssignment } from "@/hooks/useBids";
 import { useUpdateJobStatus, getNextStatusAction } from "@/hooks/useJobStatus";
+import { useDriverLocationSharing } from "@/hooks/useGPSTracking";
 import { Skeleton } from "@/components/ui/skeleton";
 import ProofOfDeliveryDialog from "./ProofOfDeliveryDialog";
+import TrackingMap from "@/components/tracking/TrackingMap";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Job = Tables<"jobs">;
@@ -59,6 +62,17 @@ const ActiveJobBanner = () => {
   const { data: assignment, isLoading } = useActiveAssignment();
   const updateStatus = useUpdateJobStatus();
   const [showPodDialog, setShowPodDialog] = useState(false);
+  const [showMap, setShowMap] = useState(false);
+  
+  // Get job info early for location sharing hook
+  const job = assignment?.job as Job | undefined;
+  const isActiveDelivery = job && ["enroute_pickup", "picked_up", "in_transit", "arrived"].includes(job.status);
+  
+  // Location sharing hook - auto-starts when delivery is active
+  const { isSharing, currentLocation, startSharing, stopSharing } = useDriverLocationSharing(
+    job?.id ?? null,
+    !!isActiveDelivery
+  );
 
   if (isLoading) {
     return (
@@ -74,11 +88,10 @@ const ActiveJobBanner = () => {
     );
   }
 
-  if (!assignment || !assignment.job) {
+  if (!assignment || !job) {
     return null;
   }
 
-  const job = assignment.job as Job;
   const progress = statusProgress[job.status] || 0;
   const nextAction = getNextStatusAction(job.status);
 
@@ -207,7 +220,7 @@ const ActiveJobBanner = () => {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-3 mb-4">
                 {(job.pickup_lat && job.pickup_lng) || (job.drop_lat && job.drop_lng) ? (
                   <Button 
                     variant="outline" 
@@ -233,6 +246,26 @@ const ActiveJobBanner = () => {
                   <Phone className="w-5 h-5" />
                   Contact Shipper
                 </Button>
+                
+                {/* Location Sharing Toggle */}
+                <Button 
+                  variant={isSharing ? "secondary" : "outline"} 
+                  size="lg"
+                  onClick={() => isSharing ? stopSharing() : startSharing()}
+                >
+                  <Radio className={`w-5 h-5 ${isSharing ? "animate-pulse" : ""}`} />
+                  {isSharing ? "Sharing Location" : "Share Location"}
+                </Button>
+                
+                {/* Toggle Map View */}
+                <Button 
+                  variant="outline" 
+                  size="lg"
+                  onClick={() => setShowMap(!showMap)}
+                >
+                  <MapPin className="w-5 h-5" />
+                  {showMap ? "Hide Map" : "Show Map"}
+                </Button>
 
                 {nextAction && (
                   <Button
@@ -256,6 +289,38 @@ const ActiveJobBanner = () => {
                   </Button>
                 )}
               </div>
+              
+              {/* Tracking Map */}
+              {showMap && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                >
+                  <TrackingMap
+                    driverLocation={currentLocation}
+                    pickupLocation={
+                      job.pickup_lat && job.pickup_lng
+                        ? { lat: job.pickup_lat, lng: job.pickup_lng }
+                        : null
+                    }
+                    dropoffLocation={
+                      job.drop_lat && job.drop_lng
+                        ? { lat: job.drop_lat, lng: job.drop_lng }
+                        : null
+                    }
+                    pickupLabel={job.pickup_label || "Pickup"}
+                    dropoffLabel={job.drop_label || "Drop-off"}
+                    className="h-[250px]"
+                  />
+                  {isSharing && currentLocation && (
+                    <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+                      <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+                      Sharing your location with the shipper
+                    </p>
+                  )}
+                </motion.div>
+              )}
             </CardContent>
           </div>
         </Card>

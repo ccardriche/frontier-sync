@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { MapPin, Clock, Eye, AlertCircle } from "lucide-react";
+import { MapPin, Clock, Eye, AlertCircle, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import type { Job } from "@/hooks/useJobs";
 import BidsSheet from "./BidsSheet";
+import ShipperTrackingView from "./ShipperTrackingView";
 
 interface JobCardProps {
   job: Job & { bids_count: number };
@@ -47,7 +48,10 @@ const formatBudget = (budgetCents: number | null) => {
 
 const JobCard = ({ job, index }: JobCardProps) => {
   const [showBids, setShowBids] = useState(false);
+  const [showTracking, setShowTracking] = useState(false);
   const createdAt = formatDistanceToNow(new Date(job.created_at), { addSuffix: true });
+  
+  const isActiveDelivery = ["enroute_pickup", "picked_up", "in_transit", "arrived"].includes(job.status);
 
   return (
     <>
@@ -56,7 +60,7 @@ const JobCard = ({ job, index }: JobCardProps) => {
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.1 * index }}
       >
-        <Card variant="glass" className="hover:border-primary/30 transition-colors cursor-pointer">
+        <Card variant="glass" className="hover:border-primary/30 transition-colors">
           <CardContent className="p-4">
             <div className="flex flex-col md:flex-row md:items-center gap-4">
               <div className="flex-1">
@@ -95,12 +99,34 @@ const JobCard = ({ job, index }: JobCardProps) => {
                     {job.bids_count} {job.bids_count === 1 ? "bid" : "bids"}
                   </button>
                 </div>
+                {isActiveDelivery && (
+                  <Button 
+                    variant="secondary" 
+                    size="sm" 
+                    onClick={() => setShowTracking(!showTracking)}
+                  >
+                    <Truck className="w-4 h-4 mr-1" />
+                    Track
+                  </Button>
+                )}
                 <Button variant="outline" size="sm" onClick={() => setShowBids(true)}>
                   <Eye className="w-4 h-4 mr-1" />
                   View
                 </Button>
               </div>
             </div>
+            
+            {/* Tracking View */}
+            {showTracking && isActiveDelivery && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mt-4"
+              >
+                <ShipperTrackingView job={job} />
+              </motion.div>
+            )}
           </CardContent>
         </Card>
       </motion.div>
