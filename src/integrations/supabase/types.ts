@@ -100,6 +100,137 @@ export type Database = {
           },
         ]
       }
+      driver_profiles: {
+        Row: {
+          availability_preferences: Json | null
+          cdl_document_url: string | null
+          created_at: string
+          full_name: string
+          government_id_url: string | null
+          id: string
+          license_document_url: string | null
+          license_expiry: string | null
+          license_number: string | null
+          license_type: Database["public"]["Enums"]["license_type"]
+          phone: string
+          selfie_url: string | null
+          terms_accepted: boolean
+          terms_accepted_at: string | null
+          updated_at: string
+          user_id: string
+          verification_status:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          availability_preferences?: Json | null
+          cdl_document_url?: string | null
+          created_at?: string
+          full_name: string
+          government_id_url?: string | null
+          id?: string
+          license_document_url?: string | null
+          license_expiry?: string | null
+          license_number?: string | null
+          license_type?: Database["public"]["Enums"]["license_type"]
+          phone: string
+          selfie_url?: string | null
+          terms_accepted?: boolean
+          terms_accepted_at?: string | null
+          updated_at?: string
+          user_id: string
+          verification_status?:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          availability_preferences?: Json | null
+          cdl_document_url?: string | null
+          created_at?: string
+          full_name?: string
+          government_id_url?: string | null
+          id?: string
+          license_document_url?: string | null
+          license_expiry?: string | null
+          license_number?: string | null
+          license_type?: Database["public"]["Enums"]["license_type"]
+          phone?: string
+          selfie_url?: string | null
+          terms_accepted?: boolean
+          terms_accepted_at?: string | null
+          updated_at?: string
+          user_id?: string
+          verification_status?:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: []
+      }
+      driver_vehicles: {
+        Row: {
+          cargo_height_m: number | null
+          cargo_length_m: number | null
+          cargo_width_m: number | null
+          created_at: string
+          driver_profile_id: string
+          has_refrigeration: boolean | null
+          id: string
+          is_primary: boolean | null
+          license_plate: string
+          max_weight_kg: number
+          photo_urls: string[] | null
+          requires_cdl: boolean | null
+          updated_at: string
+          vehicle_type: Database["public"]["Enums"]["vehicle_type"]
+        }
+        Insert: {
+          cargo_height_m?: number | null
+          cargo_length_m?: number | null
+          cargo_width_m?: number | null
+          created_at?: string
+          driver_profile_id: string
+          has_refrigeration?: boolean | null
+          id?: string
+          is_primary?: boolean | null
+          license_plate: string
+          max_weight_kg: number
+          photo_urls?: string[] | null
+          requires_cdl?: boolean | null
+          updated_at?: string
+          vehicle_type: Database["public"]["Enums"]["vehicle_type"]
+        }
+        Update: {
+          cargo_height_m?: number | null
+          cargo_length_m?: number | null
+          cargo_width_m?: number | null
+          created_at?: string
+          driver_profile_id?: string
+          has_refrigeration?: boolean | null
+          id?: string
+          is_primary?: boolean | null
+          license_plate?: string
+          max_weight_kg?: number
+          photo_urls?: string[] | null
+          requires_cdl?: boolean | null
+          updated_at?: string
+          vehicle_type?: Database["public"]["Enums"]["vehicle_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_vehicles_driver_profile_id_fkey"
+            columns: ["driver_profile_id"]
+            isOneToOne: false
+            referencedRelation: "driver_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gps_logs: {
         Row: {
           accuracy_m: number | null
@@ -315,6 +446,7 @@ export type Database = {
         Row: {
           budget_cents: number | null
           cargo_details: Json | null
+          cargo_type: Database["public"]["Enums"]["cargo_type"] | null
           created_at: string
           drop_label: string | null
           drop_lat: number | null
@@ -334,6 +466,7 @@ export type Database = {
         Insert: {
           budget_cents?: number | null
           cargo_details?: Json | null
+          cargo_type?: Database["public"]["Enums"]["cargo_type"] | null
           created_at?: string
           drop_label?: string | null
           drop_lat?: number | null
@@ -353,6 +486,7 @@ export type Database = {
         Update: {
           budget_cents?: number | null
           cargo_details?: Json | null
+          cargo_type?: Database["public"]["Enums"]["cargo_type"] | null
           created_at?: string
           drop_label?: string | null
           drop_lat?: number | null
@@ -368,6 +502,60 @@ export type Database = {
           updated_at?: string
           urgency?: boolean | null
           weight_kg?: number | null
+        }
+        Relationships: []
+      }
+      landowner_profiles: {
+        Row: {
+          business_name: string | null
+          created_at: string
+          email: string | null
+          id: string
+          owner_name: string
+          phone: string
+          terms_accepted: boolean
+          terms_accepted_at: string | null
+          updated_at: string
+          user_id: string
+          verification_status:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          business_name?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          owner_name: string
+          phone: string
+          terms_accepted?: boolean
+          terms_accepted_at?: string | null
+          updated_at?: string
+          user_id: string
+          verification_status?:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          business_name?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          owner_name?: string
+          phone?: string
+          terms_accepted?: boolean
+          terms_accepted_at?: string | null
+          updated_at?: string
+          user_id?: string
+          verification_status?:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+          verified_at?: string | null
+          verified_by?: string | null
         }
         Relationships: []
       }
@@ -454,6 +642,126 @@ export type Database = {
           vehicle_info?: Json | null
           verified?: boolean | null
           wallet_balance_cents?: number | null
+        }
+        Relationships: []
+      }
+      saved_locations: {
+        Row: {
+          created_at: string
+          gps_accuracy_m: number | null
+          id: string
+          is_verified: boolean | null
+          landmark_description: string | null
+          lat: number
+          lng: number
+          location_name: string
+          notes: string | null
+          photo_urls: string[] | null
+          updated_at: string
+          usage_count: number | null
+          user_id: string
+          verified_address: string | null
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          gps_accuracy_m?: number | null
+          id?: string
+          is_verified?: boolean | null
+          landmark_description?: string | null
+          lat: number
+          lng: number
+          location_name: string
+          notes?: string | null
+          photo_urls?: string[] | null
+          updated_at?: string
+          usage_count?: number | null
+          user_id: string
+          verified_address?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          gps_accuracy_m?: number | null
+          id?: string
+          is_verified?: boolean | null
+          landmark_description?: string | null
+          lat?: number
+          lng?: number
+          location_name?: string
+          notes?: string | null
+          photo_urls?: string[] | null
+          updated_at?: string
+          usage_count?: number | null
+          user_id?: string
+          verified_address?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: []
+      }
+      shipper_profiles: {
+        Row: {
+          business_name: string
+          business_type: Database["public"]["Enums"]["business_type"]
+          contact_person_name: string
+          created_at: string
+          email: string
+          id: string
+          phone: string
+          products_shipped: Database["public"]["Enums"]["cargo_type"][] | null
+          registration_number: string | null
+          terms_accepted: boolean
+          terms_accepted_at: string | null
+          updated_at: string
+          user_id: string
+          verification_status:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          business_name: string
+          business_type: Database["public"]["Enums"]["business_type"]
+          contact_person_name: string
+          created_at?: string
+          email: string
+          id?: string
+          phone: string
+          products_shipped?: Database["public"]["Enums"]["cargo_type"][] | null
+          registration_number?: string | null
+          terms_accepted?: boolean
+          terms_accepted_at?: string | null
+          updated_at?: string
+          user_id: string
+          verification_status?:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          business_name?: string
+          business_type?: Database["public"]["Enums"]["business_type"]
+          contact_person_name?: string
+          created_at?: string
+          email?: string
+          id?: string
+          phone?: string
+          products_shipped?: Database["public"]["Enums"]["cargo_type"][] | null
+          registration_number?: string | null
+          terms_accepted?: boolean
+          terms_accepted_at?: string | null
+          updated_at?: string
+          user_id?: string
+          verification_status?:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+          verified_at?: string | null
+          verified_by?: string | null
         }
         Relationships: []
       }
@@ -593,6 +901,46 @@ export type Database = {
     Enums: {
       app_role: "shipper" | "driver" | "gig_worker" | "landowner" | "admin"
       bid_status: "active" | "withdrawn" | "rejected" | "accepted"
+      business_type:
+        | "sole_proprietor"
+        | "partnership"
+        | "llc"
+        | "corporation"
+        | "cooperative"
+        | "other"
+      cargo_type:
+        | "small_parcels"
+        | "palletized_goods"
+        | "bulk_goods"
+        | "mixed_freight"
+        | "dry_food"
+        | "perishables"
+        | "frozen_goods"
+        | "livestock"
+        | "produce"
+        | "cement"
+        | "lumber"
+        | "steel"
+        | "pipes"
+        | "heavy_machinery"
+        | "furniture"
+        | "appliances"
+        | "electronics"
+        | "clothing"
+        | "fuel"
+        | "chemicals_non_hazardous"
+        | "minerals"
+        | "raw_materials"
+        | "medical_supplies"
+        | "pharmaceuticals"
+        | "hazardous_materials"
+        | "fragile_items"
+        | "oversized_loads"
+        | "documents"
+        | "small_packages"
+        | "same_day_deliveries"
+        | "furniture_light"
+        | "appliances_small"
       fee_model: "per_checkin" | "daily" | "monthly" | "free"
       hub_type: "micro_hub" | "transit_stop"
       job_status:
@@ -606,7 +954,17 @@ export type Database = {
         | "delivered"
         | "closed"
         | "cancelled"
+      license_type: "standard" | "cdl"
       ticket_status: "open" | "in_progress" | "resolved" | "closed"
+      vehicle_type:
+        | "car"
+        | "pickup_truck"
+        | "van"
+        | "box_truck"
+        | "flatbed"
+        | "semi_truck"
+        | "heavy_equipment"
+        | "specialized_carrier"
       verification_status: "pending" | "approved" | "rejected"
     }
     CompositeTypes: {
@@ -737,6 +1095,48 @@ export const Constants = {
     Enums: {
       app_role: ["shipper", "driver", "gig_worker", "landowner", "admin"],
       bid_status: ["active", "withdrawn", "rejected", "accepted"],
+      business_type: [
+        "sole_proprietor",
+        "partnership",
+        "llc",
+        "corporation",
+        "cooperative",
+        "other",
+      ],
+      cargo_type: [
+        "small_parcels",
+        "palletized_goods",
+        "bulk_goods",
+        "mixed_freight",
+        "dry_food",
+        "perishables",
+        "frozen_goods",
+        "livestock",
+        "produce",
+        "cement",
+        "lumber",
+        "steel",
+        "pipes",
+        "heavy_machinery",
+        "furniture",
+        "appliances",
+        "electronics",
+        "clothing",
+        "fuel",
+        "chemicals_non_hazardous",
+        "minerals",
+        "raw_materials",
+        "medical_supplies",
+        "pharmaceuticals",
+        "hazardous_materials",
+        "fragile_items",
+        "oversized_loads",
+        "documents",
+        "small_packages",
+        "same_day_deliveries",
+        "furniture_light",
+        "appliances_small",
+      ],
       fee_model: ["per_checkin", "daily", "monthly", "free"],
       hub_type: ["micro_hub", "transit_stop"],
       job_status: [
@@ -751,7 +1151,18 @@ export const Constants = {
         "closed",
         "cancelled",
       ],
+      license_type: ["standard", "cdl"],
       ticket_status: ["open", "in_progress", "resolved", "closed"],
+      vehicle_type: [
+        "car",
+        "pickup_truck",
+        "van",
+        "box_truck",
+        "flatbed",
+        "semi_truck",
+        "heavy_equipment",
+        "specialized_carrier",
+      ],
       verification_status: ["pending", "approved", "rejected"],
     },
   },
