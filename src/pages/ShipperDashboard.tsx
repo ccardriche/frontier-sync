@@ -9,6 +9,7 @@ import AIAssistant from "@/components/AIAssistant";
 import StatsGrid from "@/components/shipper/StatsGrid";
 import JobForm from "@/components/shipper/JobForm";
 import JobCard from "@/components/shipper/JobCard";
+import RecurringRoutesSection from "@/components/shipper/RecurringRoutesSection";
 import { useShipperJobs } from "@/hooks/useJobs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
@@ -86,6 +87,9 @@ const ShipperDashboard = () => {
         <AnimatePresence>
           {showNewJob && <JobForm onClose={() => setShowNewJob(false)} />}
         </AnimatePresence>
+
+        {/* Recurring Routes Section */}
+        <RecurringRoutesSection />
 
         {/* Jobs List */}
         <motion.div
