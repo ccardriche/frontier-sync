@@ -1,8 +1,8 @@
-import { MapPin, Navigation, Clock, Truck } from "lucide-react";
+import { MapPin, Navigation, Clock, Truck, Timer } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useDriverTracking } from "@/hooks/useGPSTracking";
+import { useETA } from "@/hooks/useETA";
 import TrackingMap from "@/components/tracking/TrackingMap";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -28,10 +28,6 @@ const ShipperTrackingView = ({ job }: ShipperTrackingViewProps) => {
     job.status
   );
 
-  if (!isActiveDelivery) {
-    return null;
-  }
-
   const pickupLocation =
     job.pickup_lat && job.pickup_lng
       ? { lat: job.pickup_lat, lng: job.pickup_lng }
@@ -41,6 +37,17 @@ const ShipperTrackingView = ({ job }: ShipperTrackingViewProps) => {
     job.drop_lat && job.drop_lng
       ? { lat: job.drop_lat, lng: job.drop_lng }
       : null;
+
+  const eta = useETA({
+    driverLocation,
+    pickupLocation,
+    dropoffLocation,
+    jobStatus: job.status,
+  });
+
+  if (!isActiveDelivery) {
+    return null;
+  }
 
   return (
     <Card variant="glass" className="overflow-hidden">
@@ -54,6 +61,30 @@ const ShipperTrackingView = ({ job }: ShipperTrackingViewProps) => {
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* ETA Banner */}
+        {eta.hasETA && driverLocation && (
+          <div className="flex items-center justify-between p-3 rounded-lg bg-primary/10 border border-primary/20">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                <Timer className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">
+                  ETA to {eta.destinationType === "pickup" ? "pickup" : "delivery"}
+                </p>
+                <p className="text-xl font-display font-bold text-primary">
+                  {eta.formattedETA}
+                </p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-sm text-muted-foreground">Arriving at</p>
+              <p className="font-semibold">{eta.formattedArrivalTime}</p>
+              <p className="text-xs text-muted-foreground">{eta.formattedDistance} away</p>
+            </div>
+          </div>
+        )}
+
         {/* Status Info */}
         <div className="flex items-center gap-4 text-sm">
         {driverLocation ? (

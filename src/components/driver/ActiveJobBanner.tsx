@@ -10,7 +10,8 @@ import {
   CheckCircle,
   Loader2,
   Phone,
-  Radio
+  Radio,
+  Timer
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -18,6 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { useActiveAssignment } from "@/hooks/useBids";
 import { useUpdateJobStatus, getNextStatusAction } from "@/hooks/useJobStatus";
 import { useDriverLocationSharing } from "@/hooks/useGPSTracking";
+import { useETA } from "@/hooks/useETA";
 import { Skeleton } from "@/components/ui/skeleton";
 import ProofOfDeliveryDialog from "./ProofOfDeliveryDialog";
 import TrackingMap from "@/components/tracking/TrackingMap";
@@ -73,6 +75,23 @@ const ActiveJobBanner = () => {
     job?.id ?? null,
     !!isActiveDelivery
   );
+
+  // Calculate locations for ETA
+  const pickupLocation = job?.pickup_lat && job?.pickup_lng
+    ? { lat: job.pickup_lat, lng: job.pickup_lng }
+    : null;
+  
+  const dropoffLocation = job?.drop_lat && job?.drop_lng
+    ? { lat: job.drop_lat, lng: job.drop_lng }
+    : null;
+
+  // ETA calculation
+  const eta = useETA({
+    driverLocation: currentLocation,
+    pickupLocation,
+    dropoffLocation,
+    jobStatus: job?.status ?? "",
+  });
 
   if (isLoading) {
     return (
@@ -151,6 +170,30 @@ const ActiveJobBanner = () => {
                   {statusLabels[job.status] || job.status}
                 </Badge>
               </div>
+              
+              {/* ETA Banner */}
+              {eta.hasETA && currentLocation && (
+                <div className="flex items-center justify-between p-3 rounded-lg bg-primary/10 border border-primary/20 mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                      <Timer className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">
+                        ETA to {eta.destinationType === "pickup" ? "pickup" : "drop-off"}
+                      </p>
+                      <p className="text-xl font-display font-bold text-primary">
+                        {eta.formattedETA}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm text-muted-foreground">Arrive by</p>
+                    <p className="font-semibold">{eta.formattedArrivalTime}</p>
+                    <p className="text-xs text-muted-foreground">{eta.formattedDistance} away</p>
+                  </div>
+                </div>
+              )}
 
               {/* Job Details */}
               <h3 className="text-xl font-display font-bold mb-2">{job.title}</h3>
