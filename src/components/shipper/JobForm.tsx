@@ -1,24 +1,87 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { MapPin, DollarSign, ArrowRight } from "lucide-react";
+import { DollarSign, ArrowRight, Scale, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import LocationInput, { LocationData } from "@/components/location/LocationInput";
 import { useCreateJob } from "@/hooks/useJobs";
+import { Database, Json } from "@/integrations/supabase/types";
+
+type CargoType = Database["public"]["Enums"]["cargo_type"];
 
 interface JobFormProps {
   onClose: () => void;
 }
 
+// Cargo type options with display labels
+const CARGO_TYPE_OPTIONS: { value: CargoType; label: string; category: string }[] = [
+  // General Freight
+  { value: "small_parcels", label: "Small Parcels", category: "General Freight" },
+  { value: "palletized_goods", label: "Palletized Goods", category: "General Freight" },
+  { value: "bulk_goods", label: "Bulk Goods", category: "General Freight" },
+  { value: "mixed_freight", label: "Mixed Freight", category: "General Freight" },
+  // Food & Agriculture
+  { value: "dry_food", label: "Dry Food", category: "Food & Agriculture" },
+  { value: "perishables", label: "Perishables", category: "Food & Agriculture" },
+  { value: "frozen_goods", label: "Frozen Goods", category: "Food & Agriculture" },
+  { value: "livestock", label: "Livestock", category: "Food & Agriculture" },
+  { value: "produce", label: "Produce", category: "Food & Agriculture" },
+  // Construction & Industrial
+  { value: "cement", label: "Cement", category: "Construction & Industrial" },
+  { value: "lumber", label: "Lumber", category: "Construction & Industrial" },
+  { value: "steel", label: "Steel", category: "Construction & Industrial" },
+  { value: "pipes", label: "Pipes", category: "Construction & Industrial" },
+  { value: "heavy_machinery", label: "Heavy Machinery", category: "Construction & Industrial" },
+  // Retail & Consumer
+  { value: "furniture", label: "Furniture", category: "Retail & Consumer" },
+  { value: "appliances", label: "Appliances", category: "Retail & Consumer" },
+  { value: "electronics", label: "Electronics", category: "Retail & Consumer" },
+  { value: "clothing", label: "Clothing", category: "Retail & Consumer" },
+  // Energy & Resources
+  { value: "fuel", label: "Fuel", category: "Energy & Resources" },
+  { value: "chemicals_non_hazardous", label: "Chemicals (Non-Hazardous)", category: "Energy & Resources" },
+  { value: "minerals", label: "Minerals", category: "Energy & Resources" },
+  { value: "raw_materials", label: "Raw Materials", category: "Energy & Resources" },
+  // Specialty
+  { value: "medical_supplies", label: "Medical Supplies", category: "Specialty" },
+  { value: "pharmaceuticals", label: "Pharmaceuticals", category: "Specialty" },
+  { value: "hazardous_materials", label: "Hazardous Materials", category: "Specialty" },
+  { value: "fragile_items", label: "Fragile Items", category: "Specialty" },
+  { value: "oversized_loads", label: "Oversized Loads", category: "Specialty" },
+  // Gig-Friendly
+  { value: "documents", label: "Documents", category: "Gig-Friendly" },
+  { value: "small_packages", label: "Small Packages", category: "Gig-Friendly" },
+  { value: "same_day_deliveries", label: "Same-Day Deliveries", category: "Gig-Friendly" },
+  { value: "furniture_light", label: "Furniture (Light)", category: "Gig-Friendly" },
+  { value: "appliances_small", label: "Appliances (Small)", category: "Gig-Friendly" },
+];
+
+// Group cargo types by category
+const groupedCargoTypes = CARGO_TYPE_OPTIONS.reduce((acc, item) => {
+  if (!acc[item.category]) {
+    acc[item.category] = [];
+  }
+  acc[item.category].push(item);
+  return acc;
+}, {} as Record<string, typeof CARGO_TYPE_OPTIONS>);
+
 const JobForm = ({ onClose }: JobFormProps) => {
-  const [title, setTitle] = useState("");
-  const [cargoType, setCargoType] = useState("");
-  const [pickupLabel, setPickupLabel] = useState("");
-  const [dropLabel, setDropLabel] = useState("");
+  const [cargoType, setCargoType] = useState<CargoType | "">("");
+  const [pickupLocation, setPickupLocation] = useState<LocationData | null>(null);
+  const [dropLocation, setDropLocation] = useState<LocationData | null>(null);
   const [budget, setBudget] = useState("");
   const [pickupDate, setPickupDate] = useState("");
+  const [dropDate, setDropDate] = useState("");
   const [weight, setWeight] = useState("");
   const [urgency, setUrgency] = useState(false);
 
@@ -27,19 +90,56 @@ const JobForm = ({ onClose }: JobFormProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!title.trim()) {
+    // Validation
+    if (!cargoType) {
+      return;
+    }
+
+    if (!pickupLocation) {
+      return;
+    }
+
+    if (!dropLocation) {
+      return;
+    }
+
+    if (!weight || parseFloat(weight) <= 0) {
       return;
     }
 
     const budgetCents = budget ? Math.round(parseFloat(budget) * 100) : null;
-    const weightKg = weight ? parseFloat(weight) : null;
+    const weightKg = parseFloat(weight);
     const scheduledPickup = pickupDate ? new Date(pickupDate).toISOString() : null;
 
+    // Build cargo details with location metadata
+    const cargoDetails: Json = {
+      type: cargoType,
+      ...(pickupLocation && !pickupLocation.verified && {
+        pickup_metadata: {
+          landmarkDescription: pickupLocation.landmarkDescription || null,
+          notes: pickupLocation.notes || null,
+          photoUrls: pickupLocation.photoUrls || [],
+        },
+      }),
+      ...(dropLocation && !dropLocation.verified && {
+        drop_metadata: {
+          landmarkDescription: dropLocation.landmarkDescription || null,
+          notes: dropLocation.notes || null,
+          photoUrls: dropLocation.photoUrls || [],
+        },
+      }),
+    };
+
     await createJob.mutateAsync({
-      title: title.trim(),
-      cargo_details: cargoType ? { type: cargoType } : null,
-      pickup_label: pickupLabel || null,
-      drop_label: dropLabel || null,
+      title: `${CARGO_TYPE_OPTIONS.find(c => c.value === cargoType)?.label || cargoType} Shipment`,
+      cargo_type: cargoType,
+      cargo_details: cargoDetails,
+      pickup_label: pickupLocation.label,
+      pickup_lat: pickupLocation.lat,
+      pickup_lng: pickupLocation.lng,
+      drop_label: dropLocation.label,
+      drop_lat: dropLocation.lat,
+      drop_lng: dropLocation.lng,
       budget_cents: budgetCents,
       scheduled_pickup: scheduledPickup,
       weight_kg: weightKg,
@@ -49,6 +149,8 @@ const JobForm = ({ onClose }: JobFormProps) => {
 
     onClose();
   };
+
+  const isFormValid = cargoType && pickupLocation && dropLocation && weight && parseFloat(weight) > 0;
 
   return (
     <motion.div
@@ -63,59 +165,55 @@ const JobForm = ({ onClose }: JobFormProps) => {
           <CardDescription>Post a freight job to receive bids from verified drivers</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="title">Job Title *</Label>
-                <Input
-                  id="title"
-                  placeholder="e.g., Electronics Shipment"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="cargoType">Cargo Type</Label>
-                <Input
-                  id="cargoType"
-                  placeholder="e.g., General Freight"
-                  value={cargoType}
-                  onChange={(e) => setCargoType(e.target.value)}
-                />
-              </div>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Cargo Type */}
+            <div className="space-y-2">
+              <Label htmlFor="cargoType">
+                Cargo Type <span className="text-destructive">*</span>
+              </Label>
+              <Select value={cargoType} onValueChange={(val) => setCargoType(val as CargoType)}>
+                <SelectTrigger id="cargoType" className="w-full">
+                  <SelectValue placeholder="Select cargo type..." />
+                </SelectTrigger>
+                <SelectContent className="max-h-80">
+                  {Object.entries(groupedCargoTypes).map(([category, items]) => (
+                    <div key={category}>
+                      <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground bg-muted/50">
+                        {category}
+                      </div>
+                      {items.map((item) => (
+                        <SelectItem key={item.value} value={item.value}>
+                          {item.label}
+                        </SelectItem>
+                      ))}
+                    </div>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
+
+            {/* Locations */}
             <div className="grid md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="pickup">Pickup Location</Label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="pickup"
-                    placeholder="Enter pickup address"
-                    className="pl-10"
-                    value={pickupLabel}
-                    onChange={(e) => setPickupLabel(e.target.value)}
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="dropoff">Drop-off Location</Label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="dropoff"
-                    placeholder="Enter drop-off address"
-                    className="pl-10"
-                    value={dropLabel}
-                    onChange={(e) => setDropLabel(e.target.value)}
-                  />
-                </div>
-              </div>
+              <LocationInput
+                label="Pickup Location"
+                value={pickupLocation}
+                onChange={setPickupLocation}
+                placeholder="Enter pickup address..."
+                required
+              />
+              <LocationInput
+                label="Drop-off Location"
+                value={dropLocation}
+                onChange={setDropLocation}
+                placeholder="Enter drop-off address..."
+                required
+              />
             </div>
+
+            {/* Budget, Dates, Weight */}
             <div className="grid md:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="budget">Budget (USD)</Label>
+                <Label htmlFor="budget">Proposed Budget (USD)</Label>
                 <div className="relative">
                   <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
@@ -129,28 +227,45 @@ const JobForm = ({ onClose }: JobFormProps) => {
                     onChange={(e) => setBudget(e.target.value)}
                   />
                 </div>
+                <p className="text-xs text-muted-foreground">
+                  Max budget. Drivers can bid below.
+                </p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="pickupDate">Pickup Date</Label>
-                <Input
-                  id="pickupDate"
-                  type="date"
-                  value={pickupDate}
-                  onChange={(e) => setPickupDate(e.target.value)}
-                />
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    id="pickupDate"
+                    type="date"
+                    className="pl-10"
+                    value={pickupDate}
+                    onChange={(e) => setPickupDate(e.target.value)}
+                  />
+                </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="weight">Weight (kg)</Label>
-                <Input
-                  id="weight"
-                  placeholder="1000"
-                  type="number"
-                  min="0"
-                  value={weight}
-                  onChange={(e) => setWeight(e.target.value)}
-                />
+                <Label htmlFor="weight">
+                  Total Weight (kg) <span className="text-destructive">*</span>
+                </Label>
+                <div className="relative">
+                  <Scale className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    id="weight"
+                    placeholder="1000"
+                    className="pl-10"
+                    type="number"
+                    min="0"
+                    step="0.1"
+                    value={weight}
+                    onChange={(e) => setWeight(e.target.value)}
+                    required
+                  />
+                </div>
               </div>
             </div>
+
+            {/* Urgency Toggle */}
             <div className="flex items-center space-x-2">
               <Switch
                 id="urgency"
@@ -159,8 +274,14 @@ const JobForm = ({ onClose }: JobFormProps) => {
               />
               <Label htmlFor="urgency">Mark as urgent</Label>
             </div>
+
+            {/* Submit */}
             <div className="flex gap-3 pt-4">
-              <Button type="submit" variant="hero" disabled={createJob.isPending}>
+              <Button
+                type="submit"
+                variant="hero"
+                disabled={createJob.isPending || !isFormValid}
+              >
                 {createJob.isPending ? "Posting..." : "Post Job"}
                 <ArrowRight className="w-4 h-4" />
               </Button>
