@@ -2,6 +2,16 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import type { Database } from "@/integrations/supabase/types";
+import {
+  DEMO_MODE,
+  mockAdminStats,
+  mockPendingShippers,
+  mockPendingDrivers,
+  mockPendingLandowners,
+  mockSupportTickets,
+  mockAdminJobs,
+  mockAllUsers,
+} from "@/lib/seedData";
 
 type VerificationStatus = Database["public"]["Enums"]["verification_status"];
 type TicketStatus = Database["public"]["Enums"]["ticket_status"];
@@ -11,6 +21,10 @@ export function useAdminStats() {
   return useQuery({
     queryKey: ["admin-stats"],
     queryFn: async () => {
+      if (DEMO_MODE) {
+        return mockAdminStats;
+      }
+
       const [
         { count: pendingShippers },
         { count: pendingDrivers },
@@ -44,6 +58,14 @@ export function usePendingApprovals() {
   return useQuery({
     queryKey: ["pending-approvals"],
     queryFn: async () => {
+      if (DEMO_MODE) {
+        return {
+          shippers: mockPendingShippers,
+          drivers: mockPendingDrivers,
+          landowners: mockPendingLandowners,
+        };
+      }
+
       const [shippersRes, driversRes, landownersRes] = await Promise.all([
         supabase.from("shipper_profiles").select("*").eq("verification_status", "pending"),
         supabase.from("driver_profiles").select("*").eq("verification_status", "pending"),
@@ -101,6 +123,10 @@ export function useAllJobs() {
   return useQuery({
     queryKey: ["admin-jobs"],
     queryFn: async () => {
+      if (DEMO_MODE) {
+        return mockAdminJobs;
+      }
+
       const { data, error } = await supabase
         .from("jobs")
         .select("*, bids(count)")
@@ -137,6 +163,10 @@ export function useSupportTickets() {
   return useQuery({
     queryKey: ["admin-tickets"],
     queryFn: async () => {
+      if (DEMO_MODE) {
+        return mockSupportTickets;
+      }
+
       const { data, error } = await supabase
         .from("support_tickets")
         .select("*")
@@ -190,6 +220,10 @@ export function useAllUsers() {
   return useQuery({
     queryKey: ["admin-users"],
     queryFn: async () => {
+      if (DEMO_MODE) {
+        return mockAllUsers;
+      }
+
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
         .select("*")
@@ -215,6 +249,11 @@ export function useCheckAdminRole() {
   return useQuery({
     queryKey: ["is-admin"],
     queryFn: async () => {
+      // In demo mode, always allow admin access
+      if (DEMO_MODE) {
+        return true;
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return false;
 
