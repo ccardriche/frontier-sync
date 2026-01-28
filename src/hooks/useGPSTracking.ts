@@ -165,13 +165,16 @@ export const useDriverTracking = (jobId: string | null) => {
 
     // Return demo data if in demo mode
     if (DEMO_MODE) {
-      const demoHistory = mockGPSLogs.map((log) => ({
+      const demoHistory: GPSLocation[] = mockGPSLogs.map((log) => ({
         lat: log.lat,
         lng: log.lng,
         timestamp: new Date(log.created_at),
       }));
-      setRouteHistory(demoHistory);
-      setDriverLocation(demoHistory[demoHistory.length - 1]);
+      
+      if (demoHistory.length > 0) {
+        setRouteHistory(demoHistory);
+        setDriverLocation(demoHistory[demoHistory.length - 1]);
+      }
       return;
     }
 

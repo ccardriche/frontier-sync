@@ -95,6 +95,15 @@ const TrackingMap = ({
 
   const routePositions: [number, number][] = routeHistory.map((loc) => [loc.lat, loc.lng]);
 
+  // Guard against invalid state
+  if (!driverLocation && !pickupLocation && !dropoffLocation) {
+    return (
+      <div className={`rounded-lg overflow-hidden border border-border bg-muted/50 flex items-center justify-center ${className}`} style={{ minHeight: "300px" }}>
+        <p className="text-muted-foreground">Loading map...</p>
+      </div>
+    );
+  }
+
   return (
     <div className={`rounded-lg overflow-hidden border border-border ${className}`}>
       <MapContainer
