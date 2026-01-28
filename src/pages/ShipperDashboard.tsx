@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Plus, Filter, Bell, User, Package } from "lucide-react";
@@ -10,6 +10,8 @@ import StatsGrid from "@/components/shipper/StatsGrid";
 import JobForm from "@/components/shipper/JobForm";
 import JobCard from "@/components/shipper/JobCard";
 import RecurringRoutesSection from "@/components/shipper/RecurringRoutesSection";
+import InTransitSection from "@/components/shipper/InTransitSection";
+import TrackingDialog from "@/components/shipper/TrackingDialog";
 import { useShipperJobs } from "@/hooks/useJobs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
@@ -18,6 +20,7 @@ import { useShipperJobNotifications } from "@/hooks/useJobStatusNotifications";
 const ShipperDashboard = () => {
   const [showNewJob, setShowNewJob] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [trackingJobId, setTrackingJobId] = useState<string | null>(null);
   const { data: jobs, isLoading, error } = useShipperJobs();
   
   // Enable real-time job status notifications
@@ -28,6 +31,12 @@ const ShipperDashboard = () => {
     job.pickup_label?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     job.drop_label?.toLowerCase().includes(searchQuery.toLowerCase())
   ) ?? [];
+
+  const trackingJob = jobs?.find((job) => job.id === trackingJobId) || null;
+
+  const handleViewTracking = useCallback((jobId: string) => {
+    setTrackingJobId(jobId);
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -87,6 +96,13 @@ const ShipperDashboard = () => {
         <AnimatePresence>
           {showNewJob && <JobForm onClose={() => setShowNewJob(false)} />}
         </AnimatePresence>
+
+        {/* Live Tracking Section - Shows in-transit shipments */}
+        <InTransitSection
+          jobs={jobs ?? []}
+          isLoading={isLoading}
+          onViewTracking={handleViewTracking}
+        />
 
         {/* Recurring Routes Section */}
         <RecurringRoutesSection />
@@ -151,6 +167,13 @@ const ShipperDashboard = () => {
           </div>
         </motion.div>
       </main>
+
+      {/* Tracking Dialog */}
+      <TrackingDialog
+        job={trackingJob}
+        open={!!trackingJobId}
+        onOpenChange={(open) => !open && setTrackingJobId(null)}
+      />
 
       {/* AI Assistant */}
       <AIAssistant />
