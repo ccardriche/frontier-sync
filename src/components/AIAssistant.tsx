@@ -1,12 +1,14 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  Brain, MessageCircle, Send, X, Loader2,
-  Truck, MapPin, HelpCircle
+  Brain, Send, X, Loader2,
+  Truck, MapPin, HelpCircle, Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface Message {
   id: string;
@@ -18,7 +20,7 @@ interface Message {
 const quickActions = [
   { icon: Truck, label: "Track my cargo" },
   { icon: MapPin, label: "Find nearby hubs" },
-  { icon: HelpCircle, label: "Help with delivery" },
+  { icon: HelpCircle, label: "Platform status" },
 ];
 
 const AIAssistant = () => {
@@ -27,13 +29,14 @@ const AIAssistant = () => {
     {
       id: "1",
       role: "assistant",
-      content: "Hello! I'm your Pioneer Nexus AI assistant. I can help you track shipments, find jobs, manage hubs, and answer any logistics questions. What can I help you with today?",
+      content: "Hello! I'm Nexus AI, your intelligent logistics assistant. I have access to real-time platform data and can help you track shipments, find jobs, manage hubs, and answer any logistics questions. What can I help you with today?",
       timestamp: new Date()
     }
   ]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -44,7 +47,7 @@ const AIAssistant = () => {
   }, [messages]);
 
   const handleSend = async () => {
-    if (!input.trim()) return;
+    if (!input.trim() || isTyping) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -54,36 +57,79 @@ const AIAssistant = () => {
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const currentInput = input;
     setInput("");
     setIsTyping(true);
 
-    // Simulate AI response
-    setTimeout(() => {
-      const responses = [
-        "I'm analyzing the logistics data for you. Based on current traffic patterns and driver availability, your shipment should arrive within the estimated timeframe.",
-        "I've found 3 available drivers near your pickup location. The closest one can reach you in approximately 15 minutes.",
-        "Your cargo is currently in transit and is 65% of the way to its destination. ETA: 45 minutes.",
-        "I've optimized the route based on real-time road conditions. This saves approximately 20 minutes compared to the standard route.",
-        "Looking at your delivery history, I notice most successful deliveries happen between 9 AM and 3 PM. I recommend scheduling future pickups during this window."
-      ];
+    try {
+      const { data, error } = await supabase.functions.invoke('nexus-ai', {
+        body: { 
+          message: currentInput,
+          userId: null, // Would come from auth context
+          userRole: null // Would come from user's role
+        }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (data.error) {
+        // Handle specific error cases
+        if (data.error.includes("Rate limit")) {
+          toast({
+            title: "Rate Limited",
+            description: "Please wait a moment before sending another message.",
+            variant: "destructive"
+          });
+        } else if (data.error.includes("credits")) {
+          toast({
+            title: "AI Credits Exhausted",
+            description: "Please add credits in workspace settings to continue.",
+            variant: "destructive"
+          });
+        }
+        throw new Error(data.error);
+      }
 
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: responses[Math.floor(Math.random() * responses.length)],
+        content: data.message,
         timestamp: new Date()
       };
 
       setMessages(prev => [...prev, aiMessage]);
+
+    } catch (error) {
+      console.error("AI error:", error);
+      
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: "I apologize, but I encountered an issue processing your request. Please try again in a moment.",
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, errorMessage]);
+      
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
   };
 
   const handleQuickAction = (action: string) => {
     setInput(action);
-    setTimeout(() => {
-      handleSend();
-    }, 100);
+  };
+
+  // Format message content with basic markdown support
+  const formatMessage = (content: string) => {
+    // Convert **bold** to <strong>
+    let formatted = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    // Convert newlines to <br>
+    formatted = formatted.replace(/\n/g, '<br />');
+    // Convert bullet points
+    formatted = formatted.replace(/^- /gm, '• ');
+    return formatted;
   };
 
   return (
@@ -105,7 +151,7 @@ const AIAssistant = () => {
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="fixed bottom-6 right-6 w-96 max-w-[calc(100vw-3rem)] z-50"
+            className="fixed bottom-6 right-6 w-[420px] max-w-[calc(100vw-3rem)] z-50"
           >
             <Card variant="glow" className="overflow-hidden shadow-elevated">
               {/* Header */}
@@ -116,10 +162,13 @@ const AIAssistant = () => {
                       <Brain className="w-5 h-5 text-primary-foreground" />
                     </div>
                     <div>
-                      <CardTitle className="text-base">Nexus AI</CardTitle>
+                      <CardTitle className="text-base flex items-center gap-2">
+                        Nexus AI
+                        <Sparkles className="w-4 h-4 text-primary" />
+                      </CardTitle>
                       <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                         <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
-                        Learning & Adapting
+                        Connected to Live Data
                       </div>
                     </div>
                   </div>
@@ -136,7 +185,7 @@ const AIAssistant = () => {
 
               {/* Messages */}
               <CardContent className="p-0">
-                <div className="h-80 overflow-y-auto p-4 space-y-4">
+                <div className="h-96 overflow-y-auto p-4 space-y-4">
                   {messages.map((message) => (
                     <motion.div
                       key={message.id}
@@ -145,13 +194,16 @@ const AIAssistant = () => {
                       className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
                     >
                       <div
-                        className={`max-w-[80%] rounded-2xl px-4 py-2 ${
+                        className={`max-w-[85%] rounded-2xl px-4 py-3 ${
                           message.role === "user"
                             ? "bg-primary text-primary-foreground rounded-br-md"
                             : "bg-secondary text-secondary-foreground rounded-bl-md"
                         }`}
                       >
-                        <p className="text-sm">{message.content}</p>
+                        <div 
+                          className="text-sm leading-relaxed"
+                          dangerouslySetInnerHTML={{ __html: formatMessage(message.content) }}
+                        />
                       </div>
                     </motion.div>
                   ))}
@@ -163,10 +215,9 @@ const AIAssistant = () => {
                       className="flex justify-start"
                     >
                       <div className="bg-secondary rounded-2xl rounded-bl-md px-4 py-3">
-                        <div className="flex items-center gap-1">
-                          <span className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "0ms" }} />
-                          <span className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "150ms" }} />
-                          <span className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "300ms" }} />
+                        <div className="flex items-center gap-2">
+                          <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                          <span className="text-sm text-muted-foreground">Analyzing data...</span>
                         </div>
                       </div>
                     </motion.div>
@@ -203,8 +254,9 @@ const AIAssistant = () => {
                     <Input
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
-                      placeholder="Ask anything..."
+                      placeholder="Ask about jobs, tracking, hubs..."
                       className="flex-1"
+                      disabled={isTyping}
                     />
                     <Button 
                       type="submit" 
