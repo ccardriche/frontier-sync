@@ -264,6 +264,53 @@ export type Database = {
         }
         Relationships: []
       }
+      job_stops: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          id: string
+          job_id: string
+          label: string | null
+          lat: number
+          lng: number
+          optimized_order: number | null
+          sequence_order: number
+          stop_type: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          job_id: string
+          label?: string | null
+          lat: number
+          lng: number
+          optimized_order?: number | null
+          sequence_order: number
+          stop_type: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          job_id?: string
+          label?: string | null
+          lat?: number
+          lng?: number
+          optimized_order?: number | null
+          sequence_order?: number
+          stop_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_stops_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       jobs: {
         Row: {
           budget_cents: number | null
