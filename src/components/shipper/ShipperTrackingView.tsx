@@ -1,6 +1,7 @@
 import { MapPin, Navigation, Clock, Truck, Timer } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useDriverTracking } from "@/hooks/useGPSTracking";
 import { useETA } from "@/hooks/useETA";
 import TrackingMap from "@/components/tracking/TrackingMap";
@@ -10,6 +11,7 @@ type Job = Tables<"jobs">;
 
 interface ShipperTrackingViewProps {
   job: Job;
+  className?: string;
 }
 
 const statusLabels: Record<string, string> = {
@@ -21,7 +23,7 @@ const statusLabels: Record<string, string> = {
   delivered: "Delivered",
 };
 
-const ShipperTrackingView = ({ job }: ShipperTrackingViewProps) => {
+const ShipperTrackingView = ({ job, className = "" }: ShipperTrackingViewProps) => {
   const { driverLocation, routeHistory } = useDriverTracking(job.id);
 
   const isActiveDelivery = ["enroute_pickup", "picked_up", "in_transit", "arrived"].includes(
@@ -50,7 +52,7 @@ const ShipperTrackingView = ({ job }: ShipperTrackingViewProps) => {
   }
 
   return (
-    <Card variant="glass" className="overflow-hidden">
+    <Card variant="glass" className={`overflow-hidden ${className}`}>
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-display flex items-center gap-2">
@@ -60,7 +62,7 @@ const ShipperTrackingView = ({ job }: ShipperTrackingViewProps) => {
           <Badge variant="inTransit">{statusLabels[job.status]}</Badge>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 flex-1 flex flex-col">
         {/* ETA Banner */}
         {eta.hasETA && driverLocation && (
           <div className="flex items-center justify-between p-3 rounded-lg bg-primary/10 border border-primary/20">
@@ -85,9 +87,26 @@ const ShipperTrackingView = ({ job }: ShipperTrackingViewProps) => {
           </div>
         )}
 
+        {/* Loading state for ETA */}
+        {!driverLocation && (
+          <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-border">
+            <div className="flex items-center gap-3">
+              <Skeleton className="w-10 h-10 rounded-full" />
+              <div className="space-y-1">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-6 w-16" />
+              </div>
+            </div>
+            <div className="space-y-1">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-5 w-16 ml-auto" />
+            </div>
+          </div>
+        )}
+
         {/* Status Info */}
         <div className="flex items-center gap-4 text-sm">
-        {driverLocation ? (
+          {driverLocation ? (
             <>
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
@@ -100,22 +119,24 @@ const ShipperTrackingView = ({ job }: ShipperTrackingViewProps) => {
             </>
           ) : (
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-muted" />
+              <div className="w-2 h-2 rounded-full bg-muted animate-pulse" />
               <span className="text-muted-foreground">Waiting for driver location...</span>
             </div>
           )}
         </div>
 
         {/* Map */}
-        <TrackingMap
-          driverLocation={driverLocation}
-          pickupLocation={pickupLocation}
-          dropoffLocation={dropoffLocation}
-          pickupLabel={job.pickup_label || "Pickup"}
-          dropoffLabel={job.drop_label || "Drop-off"}
-          routeHistory={routeHistory}
-          className="h-[300px]"
-        />
+        <div className={`flex-1 ${className.includes("h-full") ? "min-h-[400px]" : ""}`}>
+          <TrackingMap
+            driverLocation={driverLocation}
+            pickupLocation={pickupLocation}
+            dropoffLocation={dropoffLocation}
+            pickupLabel={job.pickup_label || "Pickup"}
+            dropoffLabel={job.drop_label || "Drop-off"}
+            routeHistory={routeHistory}
+            className={className.includes("h-full") ? "h-full" : "h-[300px]"}
+          />
+        </div>
 
         {/* Route Info */}
         <div className="grid grid-cols-2 gap-4">
