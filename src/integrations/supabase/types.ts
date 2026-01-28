@@ -345,6 +345,7 @@ export type Database = {
           location_label: string | null
           operating_hours: string | null
           owner_id: string
+          security_features: Json | null
           updated_at: string
           verification_docs: string[] | null
           verification_status:
@@ -366,6 +367,7 @@ export type Database = {
           location_label?: string | null
           operating_hours?: string | null
           owner_id: string
+          security_features?: Json | null
           updated_at?: string
           verification_docs?: string[] | null
           verification_status?:
@@ -387,6 +389,7 @@ export type Database = {
           location_label?: string | null
           operating_hours?: string | null
           owner_id?: string
+          security_features?: Json | null
           updated_at?: string
           verification_docs?: string[] | null
           verification_status?:
