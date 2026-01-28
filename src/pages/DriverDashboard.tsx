@@ -12,6 +12,7 @@ import DriverStatsGrid from "@/components/driver/DriverStatsGrid";
 import ActiveJobBanner from "@/components/driver/ActiveJobBanner";
 import AvailableJobCard from "@/components/driver/AvailableJobCard";
 import { useAvailableJobs, useDriverStats } from "@/hooks/useBids";
+import { useDriverJobNotifications } from "@/hooks/useJobStatusNotifications";
 
 const DriverDashboard = () => {
   const [selectedJob, setSelectedJob] = useState<string | null>(null);
@@ -19,6 +20,9 @@ const DriverDashboard = () => {
 
   const { data: jobs, isLoading, error } = useAvailableJobs();
   const { data: stats } = useDriverStats();
+  
+  // Enable real-time job status notifications
+  useDriverJobNotifications();
 
   const formatCurrency = (cents: number) => {
     return `$${(cents / 100).toLocaleString()}`;

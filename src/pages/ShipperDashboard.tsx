@@ -12,11 +12,15 @@ import JobCard from "@/components/shipper/JobCard";
 import { useShipperJobs } from "@/hooks/useJobs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
+import { useShipperJobNotifications } from "@/hooks/useJobStatusNotifications";
 
 const ShipperDashboard = () => {
   const [showNewJob, setShowNewJob] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const { data: jobs, isLoading, error } = useShipperJobs();
+  
+  // Enable real-time job status notifications
+  useShipperJobNotifications();
 
   const filteredJobs = jobs?.filter((job) =>
     job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
