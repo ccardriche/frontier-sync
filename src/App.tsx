@@ -8,6 +8,8 @@ import RoleSelection from "./pages/RoleSelection";
 import ShipperDashboard from "./pages/ShipperDashboard";
 import DriverDashboard from "./pages/DriverDashboard";
 import LandownerDashboard from "./pages/LandownerDashboard";
+import Auth from "./pages/Auth";
+import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -20,6 +22,8 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/roles" element={<RoleSelection />} />
           <Route path="/dashboard" element={<RoleSelection />} />
           <Route path="/dashboard/shipper" element={<ShipperDashboard />} />
