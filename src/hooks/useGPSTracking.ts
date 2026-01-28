@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
 import { toast } from "@/hooks/use-toast";
+import { DEMO_MODE, mockGPSLogs } from "@/lib/seedData";
 
 interface GPSLocation {
   lat: number;
@@ -161,6 +162,18 @@ export const useDriverTracking = (jobId: string | null) => {
 
   useEffect(() => {
     if (!jobId) return;
+
+    // Return demo data if in demo mode
+    if (DEMO_MODE) {
+      const demoHistory = mockGPSLogs.map((log) => ({
+        lat: log.lat,
+        lng: log.lng,
+        timestamp: new Date(log.created_at),
+      }));
+      setRouteHistory(demoHistory);
+      setDriverLocation(demoHistory[demoHistory.length - 1]);
+      return;
+    }
 
     // Fetch initial location history
     const fetchHistory = async () => {
