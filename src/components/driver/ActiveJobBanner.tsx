@@ -11,7 +11,8 @@ import {
   Loader2,
   Phone,
   Radio,
-  Timer
+  Timer,
+  Route
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -20,9 +21,11 @@ import { useActiveAssignment } from "@/hooks/useBids";
 import { useUpdateJobStatus, getNextStatusAction } from "@/hooks/useJobStatus";
 import { useDriverLocationSharing } from "@/hooks/useGPSTracking";
 import { useETA } from "@/hooks/useETA";
+import { useDriverRouteOptimization } from "@/hooks/useRouteOptimization";
 import { Skeleton } from "@/components/ui/skeleton";
 import ProofOfDeliveryDialog from "./ProofOfDeliveryDialog";
 import TrackingMap from "@/components/tracking/TrackingMap";
+import RouteOptimizationCard from "./RouteOptimizationCard";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Job = Tables<"jobs">;
@@ -65,6 +68,7 @@ const ActiveJobBanner = () => {
   const updateStatus = useUpdateJobStatus();
   const [showPodDialog, setShowPodDialog] = useState(false);
   const [showMap, setShowMap] = useState(false);
+  const [showRouteOptimization, setShowRouteOptimization] = useState(false);
   
   // Get job info early for location sharing hook
   const job = assignment?.job as Job | undefined;
@@ -92,6 +96,9 @@ const ActiveJobBanner = () => {
     dropoffLocation,
     jobStatus: job?.status ?? "",
   });
+
+  // Route optimization for multiple jobs
+  const { optimizedRoute, hasMultipleJobs } = useDriverRouteOptimization(currentLocation);
 
   if (isLoading) {
     return (
@@ -309,6 +316,18 @@ const ActiveJobBanner = () => {
                   <MapPin className="w-5 h-5" />
                   {showMap ? "Hide Map" : "Show Map"}
                 </Button>
+                
+                {/* Route Optimization Toggle (only show if multiple jobs) */}
+                {hasMultipleJobs && optimizedRoute && (
+                  <Button 
+                    variant={showRouteOptimization ? "secondary" : "outline"} 
+                    size="lg"
+                    onClick={() => setShowRouteOptimization(!showRouteOptimization)}
+                  >
+                    <Route className="w-5 h-5" />
+                    {showRouteOptimization ? "Hide Optimized Route" : "Optimize Route"}
+                  </Button>
+                )}
 
                 {nextAction && (
                   <Button
@@ -362,6 +381,26 @@ const ActiveJobBanner = () => {
                       Sharing your location with the shipper
                     </p>
                   )}
+                </motion.div>
+              )}
+              
+              {/* Route Optimization Card */}
+              {showRouteOptimization && optimizedRoute && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="mt-4"
+                >
+                  <RouteOptimizationCard 
+                    optimizedRoute={optimizedRoute}
+                    onNavigateToStop={(stopId) => {
+                      const stop = optimizedRoute.stops.find(s => s.id === stopId);
+                      if (stop) {
+                        window.open(`https://www.google.com/maps/dir/?api=1&destination=${stop.lat},${stop.lng}`, "_blank");
+                      }
+                    }}
+                  />
                 </motion.div>
               )}
             </CardContent>
