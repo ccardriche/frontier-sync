@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
-import { Filter, Bell, User, Wallet, Truck } from "lucide-react";
+import { Filter, Bell, User, Wallet, Truck, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -16,9 +16,12 @@ import NearbyHubsSection from "@/components/driver/NearbyHubsSection";
 import CheckinHistorySheet from "@/components/driver/CheckinHistorySheet";
 import { useAvailableJobs, useDriverStats } from "@/hooks/useBids";
 import { useDriverJobNotifications } from "@/hooks/useJobStatusNotifications";
+import EarningsDashboard from "@/components/driver/EarningsDashboard";
+
 const DriverDashboard = () => {
   const [selectedJob, setSelectedJob] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showEarnings, setShowEarnings] = useState(false);
 
   const { data: jobs, isLoading, error } = useAvailableJobs();
   const { data: stats } = useDriverStats();
@@ -36,6 +39,11 @@ const DriverDashboard = () => {
     job.drop_label?.toLowerCase().includes(searchQuery.toLowerCase())
   ) ?? [];
 
+  // Show earnings dashboard if active
+  if (showEarnings) {
+    return <EarningsDashboard onBack={() => setShowEarnings(false)} />;
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -46,7 +54,19 @@ const DriverDashboard = () => {
             <Badge variant="accent">Driver</Badge>
           </Link>
           <div className="flex items-center gap-4">
-            <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-secondary">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="hidden md:flex items-center gap-2"
+              onClick={() => setShowEarnings(true)}
+            >
+              <TrendingUp className="w-4 h-4" />
+              <span className="font-semibold">Earnings</span>
+            </Button>
+            <div
+              className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-secondary cursor-pointer hover:bg-secondary/80 transition-colors"
+              onClick={() => setShowEarnings(true)}
+            >
               <Wallet className="w-4 h-4 text-primary" />
               <span className="font-semibold">{formatCurrency(stats?.walletBalance ?? 0)}</span>
             </div>
