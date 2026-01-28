@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables, TablesInsert } from "@/integrations/supabase/types";
 import { toast } from "@/hooks/use-toast";
@@ -14,6 +15,42 @@ interface JobWithShipper extends Tables<"jobs"> {
 }
 
 export const useAvailableJobs = () => {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    // Subscribe to realtime changes on jobs table
+    const channel = supabase
+      .channel("driver-jobs-changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "jobs",
+        },
+        (payload) => {
+          // Only refresh if job is relevant (posted or bidding status)
+          const newJob = payload.new as Tables<"jobs"> | null;
+          const oldJob = payload.old as Tables<"jobs"> | null;
+          
+          const relevantStatuses = ["posted", "bidding"];
+          const isRelevant =
+            (newJob && relevantStatuses.includes(newJob.status)) ||
+            (oldJob && relevantStatuses.includes(oldJob.status));
+
+          if (isRelevant) {
+            queryClient.invalidateQueries({ queryKey: ["available-jobs"] });
+            queryClient.invalidateQueries({ queryKey: ["driver-stats"] });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
   return useQuery({
     queryKey: ["available-jobs"],
     queryFn: async (): Promise<JobWithShipper[]> => {

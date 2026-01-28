@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables, TablesInsert } from "@/integrations/supabase/types";
 import { toast } from "@/hooks/use-toast";
@@ -11,6 +12,32 @@ interface JobWithBidCount extends Job {
 }
 
 export const useShipperJobs = () => {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    // Subscribe to realtime changes on bids table
+    const channel = supabase
+      .channel("shipper-bids-changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "bids",
+        },
+        () => {
+          // Invalidate the query to refetch with new bid counts
+          queryClient.invalidateQueries({ queryKey: ["shipper-jobs"] });
+          queryClient.invalidateQueries({ queryKey: ["shipper-job-stats"] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
   return useQuery({
     queryKey: ["shipper-jobs"],
     queryFn: async (): Promise<JobWithBidCount[]> => {
@@ -89,6 +116,7 @@ export const useCreateJob = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["shipper-jobs"] });
+      queryClient.invalidateQueries({ queryKey: ["shipper-job-stats"] });
       toast({
         title: "Job Posted",
         description: "Your freight job has been posted successfully.",
