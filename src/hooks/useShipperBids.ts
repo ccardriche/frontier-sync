@@ -8,6 +8,7 @@ interface BidWithDriver extends Tables<"bids"> {
     full_name: string | null;
     rating: number | null;
     avatar_url: string | null;
+    phone: string | null;
   } | null;
 }
 
@@ -38,7 +39,7 @@ export const useJobBids = (jobId: string | null) => {
       const driverIds = [...new Set(bids.map((bid) => bid.driver_id))];
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
-        .select("id, full_name, rating, avatar_url")
+        .select("id, full_name, rating, avatar_url, phone")
         .in("id", driverIds);
 
       if (profilesError) {

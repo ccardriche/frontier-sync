@@ -14,6 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useJobBids, useAcceptBid } from "@/hooks/useShipperBids";
+import { WhatsAppButton } from "@/components/whatsapp/WhatsAppButton";
 import type { Job } from "@/hooks/useJobs";
 
 interface BidsSheetProps {
@@ -141,24 +142,42 @@ const BidsSheet = ({ job, open, onOpenChange }: BidsSheetProps) => {
                     </div>
                   )}
 
-                  {isJobOpen && (
-                    <Button
-                      variant="hero"
-                      size="sm"
-                      className="w-full"
-                      onClick={() => handleAcceptBid(bid.id)}
-                      disabled={acceptBid.isPending}
-                    >
-                      {acceptingBidId === bid.id ? (
-                        <>
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                          Accepting...
-                        </>
-                      ) : (
-                        "Accept Bid"
-                      )}
-                    </Button>
-                  )}
+                  <div className="flex gap-2">
+                    {bid.driver_profile?.phone && (
+                      <WhatsAppButton
+                        phone={bid.driver_profile.phone}
+                        messageType="bid_received"
+                        jobDetails={{
+                          title: job?.title || "",
+                          pickupLocation: job?.pickup_label || undefined,
+                          dropLocation: job?.drop_label || undefined,
+                          driverName: bid.driver_profile?.full_name || undefined,
+                        }}
+                        tooltipText="Chat with driver on WhatsApp"
+                      >
+                        Chat
+                      </WhatsAppButton>
+                    )}
+                    
+                    {isJobOpen && (
+                      <Button
+                        variant="hero"
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => handleAcceptBid(bid.id)}
+                        disabled={acceptBid.isPending}
+                      >
+                        {acceptingBidId === bid.id ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Accepting...
+                          </>
+                        ) : (
+                          "Accept Bid"
+                        )}
+                      </Button>
+                    )}
+                  </div>
                 </motion.div>
               ))}
             </div>

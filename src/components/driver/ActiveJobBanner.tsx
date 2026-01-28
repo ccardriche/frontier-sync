@@ -9,7 +9,6 @@ import {
   Truck, 
   CheckCircle,
   Loader2,
-  Phone,
   Radio,
   Timer,
   Route
@@ -26,6 +25,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import ProofOfDeliveryDialog from "./ProofOfDeliveryDialog";
 import TrackingMap from "@/components/tracking/TrackingMap";
 import RouteOptimizationCard from "./RouteOptimizationCard";
+import { WhatsAppActions } from "@/components/whatsapp/WhatsAppActions";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Job = Tables<"jobs">;
@@ -292,10 +292,24 @@ const ActiveJobBanner = () => {
                   </Button>
                 ) : null}
 
-                <Button variant="outline" size="lg">
-                  <Phone className="w-5 h-5" />
-                  Contact Shipper
-                </Button>
+                {/* WhatsApp Actions - Contact Shipper */}
+                <WhatsAppActions
+                  phone="+1234567890" // In real app, get from shipper profile
+                  jobDetails={{
+                    title: job.title,
+                    pickupLocation: job.pickup_label || undefined,
+                    dropLocation: job.drop_label || undefined,
+                    scheduledPickup: job.scheduled_pickup || undefined,
+                    budgetCents: job.budget_cents || undefined,
+                  }}
+                  availableActions={
+                    job.status === "assigned" || job.status === "enroute_pickup"
+                      ? ["pickup_reminder", "support"]
+                      : job.status === "arrived"
+                      ? ["delivery_confirmation", "support"]
+                      : ["in_transit", "support"]
+                  }
+                />
                 
                 {/* Location Sharing Toggle */}
                 <Button 
