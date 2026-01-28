@@ -1,1 +1,4 @@
 project_id = "vpuayuhnepbhngehowyv"
+
+[functions.nexus-ai]
+verify_jwt = false
