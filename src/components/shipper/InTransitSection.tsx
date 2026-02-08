@@ -23,8 +23,6 @@ const statusLabels: Record<string, string> = {
 };
 
 const InTransitJobCard = ({ job, onViewTracking }: InTransitJobCardProps) => {
-  const { driverLocation, routeHistory } = useDriverTracking(job.id);
-
   const pickupLocation =
     job.pickup_lat && job.pickup_lng
       ? { lat: job.pickup_lat, lng: job.pickup_lng }
@@ -34,6 +32,9 @@ const InTransitJobCard = ({ job, onViewTracking }: InTransitJobCardProps) => {
     job.drop_lat && job.drop_lng
       ? { lat: job.drop_lat, lng: job.drop_lng }
       : null;
+
+  // Memoize the job ID to prevent unnecessary re-subscriptions
+  const { driverLocation } = useDriverTracking(job.id);
 
   const eta = useETA({
     driverLocation,

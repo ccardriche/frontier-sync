@@ -5,6 +5,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import ShipperTrackingView from "./ShipperTrackingView";
@@ -33,9 +34,14 @@ const TrackingDialog = ({ job, open, onOpenChange }: TrackingDialogProps) => {
         } p-0 overflow-hidden`}
       >
         <DialogHeader className="px-6 py-4 border-b border-border flex flex-row items-center justify-between">
-          <DialogTitle className="font-display">
-            Tracking: {job.title}
-          </DialogTitle>
+          <div>
+            <DialogTitle className="font-display">
+              Tracking: {job.title}
+            </DialogTitle>
+            <DialogDescription className="text-sm text-muted-foreground">
+              Live tracking for your shipment
+            </DialogDescription>
+          </div>
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
