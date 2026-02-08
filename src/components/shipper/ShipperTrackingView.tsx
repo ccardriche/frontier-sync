@@ -24,8 +24,6 @@ const statusLabels: Record<string, string> = {
 };
 
 const ShipperTrackingView = ({ job, className = "" }: ShipperTrackingViewProps) => {
-  const { driverLocation, routeHistory } = useDriverTracking(job.id);
-
   const isActiveDelivery = ["enroute_pickup", "picked_up", "in_transit", "arrived"].includes(
     job.status
   );
@@ -39,6 +37,9 @@ const ShipperTrackingView = ({ job, className = "" }: ShipperTrackingViewProps) 
     job.drop_lat && job.drop_lng
       ? { lat: job.drop_lat, lng: job.drop_lng }
       : null;
+
+  // Only track if it's an active delivery
+  const { driverLocation, routeHistory } = useDriverTracking(isActiveDelivery ? job.id : null);
 
   const eta = useETA({
     driverLocation,
