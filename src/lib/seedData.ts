@@ -502,6 +502,16 @@ export const mockPendingShippers = [
     terms_accepted_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
     created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
     updated_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    mc_number: "MC-123456",
+    dot_number: "DOT-789012",
+    ein_number: "12-3456789",
+    insurance_document_url: null,
+    bond_document_url: null,
+    shipment_types: ["produce", "perishables"],
+    typical_loads: "Full truckload",
+    preferred_lanes: "Nairobi - Mombasa",
+    rate_preferences: "Per mile",
+    additional_needs: null,
   },
   {
     id: "shipper-pending-002",
@@ -520,6 +530,16 @@ export const mockPendingShippers = [
     terms_accepted_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
     created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
     updated_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    mc_number: "MC-654321",
+    dot_number: "DOT-345678",
+    ein_number: "98-7654321",
+    insurance_document_url: null,
+    bond_document_url: null,
+    shipment_types: ["electronics", "appliances"],
+    typical_loads: "LTL",
+    preferred_lanes: "Nairobi metro",
+    rate_preferences: "Flat rate",
+    additional_needs: null,
   },
 ];
 
@@ -544,6 +564,9 @@ export const mockPendingDrivers = [
     terms_accepted_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
     created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
     updated_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+    mdr_document_url: null,
+    background_check_consent: true,
+    background_check_consent_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
   },
   {
     id: "driver-pending-002",
@@ -565,6 +588,9 @@ export const mockPendingDrivers = [
     terms_accepted_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
     created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
     updated_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    mdr_document_url: null,
+    background_check_consent: false,
+    background_check_consent_at: null,
   },
   {
     id: "driver-pending-003",
@@ -586,6 +612,9 @@ export const mockPendingDrivers = [
     terms_accepted_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
     created_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
     updated_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
+    mdr_document_url: "https://example.com/mdr3.pdf",
+    background_check_consent: true,
+    background_check_consent_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
   },
 ];
 
@@ -604,6 +633,11 @@ export const mockPendingLandowners = [
     terms_accepted_at: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
     created_at: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
     updated_at: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+    insurance_document_url: null,
+    has_security_cameras: true,
+    has_qr_gate_scanner: false,
+    facility_photo_urls: [],
+    facility_description: "Large parking yard near Mombasa Road",
   },
 ];
 
