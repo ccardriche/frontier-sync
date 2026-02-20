@@ -108,12 +108,12 @@ const RoleSelection = () => {
                       </li>
                     ))}
                   </ul>
-                  <Link to={role.path}>
-                    <Button variant="hero" className="w-full">
+                  <Button variant="hero" className="w-full" asChild>
+                    <Link to={role.path}>
                       Continue as {role.title}
                       <ArrowRight className="w-4 h-4" />
-                    </Button>
-                  </Link>
+                    </Link>
+                  </Button>
                 </CardContent>
               </Card>
             </motion.div>
