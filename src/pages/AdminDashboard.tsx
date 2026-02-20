@@ -1,9 +1,11 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Shield, LogOut } from "lucide-react";
+import { Shield, LogOut, DatabaseZap, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useQueryClient } from "@tanstack/react-query";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 import { AdminStatsGrid } from "@/components/admin/AdminStatsGrid";
 import { PendingApprovalsTable } from "@/components/admin/PendingApprovalsTable";
 import { JobsOversightTable } from "@/components/admin/JobsOversightTable";
@@ -23,6 +25,8 @@ import {
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [seeding, setSeeding] = useState(false);
   const { data: isAdmin, isLoading: checkingAdmin } = useCheckAdminRole();
 
   const { data: stats, isLoading: statsLoading } = useAdminStats();
@@ -44,6 +48,32 @@ export default function AdminDashboard() {
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/auth");
+  };
+
+  const handleSeedData = async () => {
+    setSeeding(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("seed-admin-data");
+      if (error) throw error;
+      toast({
+        title: "Sample data seeded!",
+        description: "Admin portal now has pending approvals, tickets, and enriched users.",
+      });
+      // Invalidate all admin queries to refresh the dashboard
+      await queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
+      await queryClient.invalidateQueries({ queryKey: ["pending-approvals"] });
+      await queryClient.invalidateQueries({ queryKey: ["admin-tickets"] });
+      await queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      await queryClient.invalidateQueries({ queryKey: ["admin-jobs"] });
+    } catch (err: any) {
+      toast({
+        title: "Seeding failed",
+        description: err.message ?? "Unknown error",
+        variant: "destructive",
+      });
+    } finally {
+      setSeeding(false);
+    }
   };
 
   if (checkingAdmin) {
@@ -71,10 +101,25 @@ export default function AdminDashboard() {
               <p className="text-sm text-muted-foreground">Pioneer Nexus Control Center</p>
             </div>
           </div>
-          <Button variant="ghost" size="sm" onClick={handleLogout}>
-            <LogOut className="h-4 w-4 mr-2" />
-            Logout
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSeedData}
+              disabled={seeding}
+            >
+              {seeding ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <DatabaseZap className="h-4 w-4 mr-2" />
+              )}
+              {seeding ? "Seeding..." : "Seed Sample Data"}
+            </Button>
+            <Button variant="ghost" size="sm" onClick={handleLogout}>
+              <LogOut className="h-4 w-4 mr-2" />
+              Logout
+            </Button>
+          </div>
         </div>
       </header>
 
