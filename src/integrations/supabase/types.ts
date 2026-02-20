@@ -103,6 +103,8 @@ export type Database = {
       driver_profiles: {
         Row: {
           availability_preferences: Json | null
+          background_check_consent: boolean | null
+          background_check_consent_at: string | null
           cdl_document_url: string | null
           created_at: string
           full_name: string
@@ -112,6 +114,7 @@ export type Database = {
           license_expiry: string | null
           license_number: string | null
           license_type: Database["public"]["Enums"]["license_type"]
+          mdr_document_url: string | null
           phone: string
           selfie_url: string | null
           terms_accepted: boolean
@@ -126,6 +129,8 @@ export type Database = {
         }
         Insert: {
           availability_preferences?: Json | null
+          background_check_consent?: boolean | null
+          background_check_consent_at?: string | null
           cdl_document_url?: string | null
           created_at?: string
           full_name: string
@@ -135,6 +140,7 @@ export type Database = {
           license_expiry?: string | null
           license_number?: string | null
           license_type?: Database["public"]["Enums"]["license_type"]
+          mdr_document_url?: string | null
           phone: string
           selfie_url?: string | null
           terms_accepted?: boolean
@@ -149,6 +155,8 @@ export type Database = {
         }
         Update: {
           availability_preferences?: Json | null
+          background_check_consent?: boolean | null
+          background_check_consent_at?: string | null
           cdl_document_url?: string | null
           created_at?: string
           full_name?: string
@@ -158,6 +166,7 @@ export type Database = {
           license_expiry?: string | null
           license_number?: string | null
           license_type?: Database["public"]["Enums"]["license_type"]
+          mdr_document_url?: string | null
           phone?: string
           selfie_url?: string | null
           terms_accepted?: boolean
@@ -188,6 +197,7 @@ export type Database = {
           requires_cdl: boolean | null
           updated_at: string
           vehicle_type: Database["public"]["Enums"]["vehicle_type"]
+          vehicle_year: number | null
         }
         Insert: {
           cargo_height_m?: number | null
@@ -204,6 +214,7 @@ export type Database = {
           requires_cdl?: boolean | null
           updated_at?: string
           vehicle_type: Database["public"]["Enums"]["vehicle_type"]
+          vehicle_year?: number | null
         }
         Update: {
           cargo_height_m?: number | null
@@ -220,6 +231,7 @@ export type Database = {
           requires_cdl?: boolean | null
           updated_at?: string
           vehicle_type?: Database["public"]["Enums"]["vehicle_type"]
+          vehicle_year?: number | null
         }
         Relationships: [
           {
@@ -513,7 +525,12 @@ export type Database = {
           business_name: string | null
           created_at: string
           email: string | null
+          facility_description: string | null
+          facility_photo_urls: string[] | null
+          has_qr_gate_scanner: boolean | null
+          has_security_cameras: boolean | null
           id: string
+          insurance_document_url: string | null
           owner_name: string
           phone: string
           terms_accepted: boolean
@@ -530,7 +547,12 @@ export type Database = {
           business_name?: string | null
           created_at?: string
           email?: string | null
+          facility_description?: string | null
+          facility_photo_urls?: string[] | null
+          has_qr_gate_scanner?: boolean | null
+          has_security_cameras?: boolean | null
           id?: string
+          insurance_document_url?: string | null
           owner_name: string
           phone: string
           terms_accepted?: boolean
@@ -547,7 +569,12 @@ export type Database = {
           business_name?: string | null
           created_at?: string
           email?: string | null
+          facility_description?: string | null
+          facility_photo_urls?: string[] | null
+          has_qr_gate_scanner?: boolean | null
+          has_security_cameras?: boolean | null
           id?: string
+          insurance_document_url?: string | null
           owner_name?: string
           phone?: string
           terms_accepted?: boolean
@@ -785,17 +812,27 @@ export type Database = {
       }
       shipper_profiles: {
         Row: {
+          additional_needs: string | null
+          bond_document_url: string | null
           business_name: string
           business_type: Database["public"]["Enums"]["business_type"]
           contact_person_name: string
           created_at: string
+          dot_number: string | null
+          ein_number: string | null
           email: string
           id: string
+          insurance_document_url: string | null
+          mc_number: string | null
           phone: string
+          preferred_lanes: string | null
           products_shipped: Database["public"]["Enums"]["cargo_type"][] | null
+          rate_preferences: string | null
           registration_number: string | null
+          shipment_types: string[] | null
           terms_accepted: boolean
           terms_accepted_at: string | null
+          typical_loads: string | null
           updated_at: string
           user_id: string
           verification_status:
@@ -805,17 +842,27 @@ export type Database = {
           verified_by: string | null
         }
         Insert: {
+          additional_needs?: string | null
+          bond_document_url?: string | null
           business_name: string
           business_type: Database["public"]["Enums"]["business_type"]
           contact_person_name: string
           created_at?: string
+          dot_number?: string | null
+          ein_number?: string | null
           email: string
           id?: string
+          insurance_document_url?: string | null
+          mc_number?: string | null
           phone: string
+          preferred_lanes?: string | null
           products_shipped?: Database["public"]["Enums"]["cargo_type"][] | null
+          rate_preferences?: string | null
           registration_number?: string | null
+          shipment_types?: string[] | null
           terms_accepted?: boolean
           terms_accepted_at?: string | null
+          typical_loads?: string | null
           updated_at?: string
           user_id: string
           verification_status?:
@@ -825,17 +872,27 @@ export type Database = {
           verified_by?: string | null
         }
         Update: {
+          additional_needs?: string | null
+          bond_document_url?: string | null
           business_name?: string
           business_type?: Database["public"]["Enums"]["business_type"]
           contact_person_name?: string
           created_at?: string
+          dot_number?: string | null
+          ein_number?: string | null
           email?: string
           id?: string
+          insurance_document_url?: string | null
+          mc_number?: string | null
           phone?: string
+          preferred_lanes?: string | null
           products_shipped?: Database["public"]["Enums"]["cargo_type"][] | null
+          rate_preferences?: string | null
           registration_number?: string | null
+          shipment_types?: string[] | null
           terms_accepted?: boolean
           terms_accepted_at?: string | null
+          typical_loads?: string | null
           updated_at?: string
           user_id?: string
           verification_status?:
