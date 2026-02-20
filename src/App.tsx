@@ -12,6 +12,8 @@ import LandownerDashboard from "./pages/LandownerDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
+import ShipperBidsPortal from "./pages/ShipperBidsPortal";
+import DriverBidsPortal from "./pages/DriverBidsPortal";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +34,8 @@ const App = () => (
           <Route path="/dashboard/driver" element={<DriverDashboard />} />
           <Route path="/dashboard/landowner" element={<LandownerDashboard />} />
           <Route path="/dashboard/admin" element={<AdminDashboard />} />
+          <Route path="/dashboard/shipper/bids" element={<ShipperBidsPortal />} />
+          <Route path="/dashboard/driver/bids" element={<DriverBidsPortal />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

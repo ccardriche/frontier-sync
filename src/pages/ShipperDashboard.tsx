@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
-import { Plus, Filter, Bell, User, Package, LogOut } from "lucide-react";
+import { Plus, Filter, Bell, User, Package, LogOut, Gavel } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -88,6 +88,15 @@ const ShipperDashboard = () => {
           >
             <Plus className="w-5 h-5" />
             Post New Job
+          </Button>
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={() => navigate("/dashboard/shipper/bids")}
+            className="shrink-0"
+          >
+            <Gavel className="w-5 h-5" />
+            Bid Portal
           </Button>
           <div className="flex-1 flex gap-2">
             <Input

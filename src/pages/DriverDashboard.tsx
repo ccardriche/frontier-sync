@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
-import { Filter, Bell, User, Wallet, Truck, TrendingUp, LogOut } from "lucide-react";
+import { Filter, Bell, User, Wallet, Truck, TrendingUp, LogOut, Gavel } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -113,6 +113,10 @@ const DriverDashboard = () => {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-2xl font-display font-bold">Available Jobs</h2>
             <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => navigate("/dashboard/driver/bids")}>
+                <Gavel className="w-4 h-4" />
+                Bid Portal
+              </Button>
               <CheckinHistorySheet />
               <Input
                 placeholder="Search..."
