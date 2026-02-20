@@ -1,7 +1,8 @@
 import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link } from "react-router-dom";
-import { Plus, Filter, Bell, User, Package } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Plus, Filter, Bell, User, Package, LogOut } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -18,10 +19,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useShipperJobNotifications } from "@/hooks/useJobStatusNotifications";
 
 const ShipperDashboard = () => {
+  const navigate = useNavigate();
   const [showNewJob, setShowNewJob] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [trackingJobId, setTrackingJobId] = useState<string | null>(null);
   const { data: jobs, isLoading, error } = useShipperJobs();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/auth");
+  };
   
   // Enable real-time job status notifications
   useShipperJobNotifications();
@@ -54,6 +61,9 @@ const ShipperDashboard = () => {
             </Button>
             <Button variant="outline" size="icon">
               <User className="w-5 h-5" />
+            </Button>
+            <Button variant="ghost" size="icon" onClick={handleLogout} title="Log out">
+              <LogOut className="w-5 h-5" />
             </Button>
           </div>
         </div>
