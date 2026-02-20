@@ -2,3 +2,6 @@ project_id = "vpuayuhnepbhngehowyv"
 
 [functions.nexus-ai]
 verify_jwt = false
+
+[functions.seed-admin-data]
+verify_jwt = false
