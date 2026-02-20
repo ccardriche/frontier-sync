@@ -122,8 +122,8 @@ const ActiveJobBanner = () => {
   const nextAction = getNextStatusAction(job.status);
 
   const handleStatusUpdate = () => {
-    // If completing delivery (from "arrived" status), show PoD dialog
-    if (job.status === "arrived") {
+    // Require photo proof at drop-off (in_transit -> arrived) and final delivery (arrived -> delivered)
+    if (job.status === "in_transit" || job.status === "arrived") {
       setShowPodDialog(true);
       return;
     }
