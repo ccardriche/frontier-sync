@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link } from "react-router-dom";
-import { Plus, Bell, User, Building2 } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Plus, Bell, User, Building2, LogOut } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -14,8 +15,14 @@ import HubActivityFeed from "@/components/landowner/HubActivityFeed";
 import { useLandownerHubs } from "@/hooks/useHubs";
 
 const LandownerDashboard = () => {
+  const navigate = useNavigate();
   const [showNewHub, setShowNewHub] = useState(false);
   const { data: hubs, isLoading, error } = useLandownerHubs();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/auth");
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -33,6 +40,9 @@ const LandownerDashboard = () => {
             </Button>
             <Button variant="outline" size="icon">
               <User className="w-5 h-5" />
+            </Button>
+            <Button variant="ghost" size="icon" onClick={handleLogout} title="Log out">
+              <LogOut className="w-5 h-5" />
             </Button>
           </div>
         </div>

@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link } from "react-router-dom";
-import { Filter, Bell, User, Wallet, Truck, TrendingUp } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Filter, Bell, User, Wallet, Truck, TrendingUp, LogOut } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -19,9 +20,15 @@ import { useDriverJobNotifications } from "@/hooks/useJobStatusNotifications";
 import EarningsDashboard from "@/components/driver/EarningsDashboard";
 
 const DriverDashboard = () => {
+  const navigate = useNavigate();
   const [selectedJob, setSelectedJob] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [showEarnings, setShowEarnings] = useState(false);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/auth");
+  };
 
   const { data: jobs, isLoading, error } = useAvailableJobs();
   const { data: stats } = useDriverStats();
@@ -76,6 +83,9 @@ const DriverDashboard = () => {
             </Button>
             <Button variant="outline" size="icon">
               <User className="w-5 h-5" />
+            </Button>
+            <Button variant="ghost" size="icon" onClick={handleLogout} title="Log out">
+              <LogOut className="w-5 h-5" />
             </Button>
           </div>
         </div>
