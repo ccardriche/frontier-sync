@@ -293,6 +293,30 @@ export const useActiveAssignment = () => {
             completed_at: null,
             created_at: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
             job: inTransitJob,
+            stops: [
+              {
+                id: "demo-stop-pickup",
+                label: inTransitJob.pickup_label,
+                lat: inTransitJob.pickup_lat || 0,
+                lng: inTransitJob.pickup_lng || 0,
+                stop_type: "pickup",
+                sequence_order: 0,
+                completed_at: null,
+              },
+              {
+                id: "demo-stop-dropoff",
+                label: inTransitJob.drop_label,
+                lat: inTransitJob.drop_lat || 0,
+                lng: inTransitJob.drop_lng || 0,
+                stop_type: "dropoff",
+                sequence_order: 1,
+                completed_at: null,
+              },
+            ],
+            shipperContact: {
+              name: "ABC Logistics Ltd",
+              phone: "+254722123456",
+            },
           };
         }
         return null;
@@ -310,7 +334,39 @@ export const useActiveAssignment = () => {
         throw error;
       }
 
-      return assignment;
+      if (!assignment) return null;
+
+      const jobData = assignment.job as any;
+
+      // Fetch job stops
+      const { data: stops } = await supabase
+        .from("job_stops")
+        .select("*")
+        .eq("job_id", assignment.job_id)
+        .order("sequence_order", { ascending: true });
+
+      // Fetch shipper contact
+      let shipperContact: { name: string | null; phone: string | null } | null = null;
+      if (jobData?.shipper_id) {
+        const { data: shipperProfile } = await supabase
+          .from("shipper_profiles")
+          .select("contact_person_name, phone")
+          .eq("user_id", jobData.shipper_id)
+          .maybeSingle();
+
+        if (shipperProfile) {
+          shipperContact = {
+            name: shipperProfile.contact_person_name,
+            phone: shipperProfile.phone,
+          };
+        }
+      }
+
+      return {
+        ...assignment,
+        stops: stops && stops.length > 0 ? stops : undefined,
+        shipperContact,
+      };
     },
   });
 };

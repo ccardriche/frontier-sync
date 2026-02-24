@@ -420,36 +420,42 @@ export type Database = {
         Row: {
           completed_at: string | null
           created_at: string
+          driver_notes: string | null
           id: string
           job_id: string
           label: string | null
           lat: number
           lng: number
           optimized_order: number | null
+          photos: string[] | null
           sequence_order: number
           stop_type: string
         }
         Insert: {
           completed_at?: string | null
           created_at?: string
+          driver_notes?: string | null
           id?: string
           job_id: string
           label?: string | null
           lat: number
           lng: number
           optimized_order?: number | null
+          photos?: string[] | null
           sequence_order: number
           stop_type: string
         }
         Update: {
           completed_at?: string | null
           created_at?: string
+          driver_notes?: string | null
           id?: string
           job_id?: string
           label?: string | null
           lat?: number
           lng?: number
           optimized_order?: number | null
+          photos?: string[] | null
           sequence_order?: number
           stop_type?: string
         }
