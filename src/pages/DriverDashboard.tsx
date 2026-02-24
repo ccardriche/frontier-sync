@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { Filter, Bell, User, Wallet, Truck, TrendingUp, LogOut, Gavel } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -77,11 +78,11 @@ const DriverDashboard = () => {
               <Wallet className="w-4 h-4 text-primary" />
               <span className="font-semibold text-sm">{formatCurrency(stats?.walletBalance ?? 0)}</span>
             </div>
-            <Button variant="ghost" size="icon" className="relative h-9 w-9">
+            <Button variant="ghost" size="icon" className="relative h-9 w-9" onClick={() => toast({ title: "Notifications", description: "You have no new notifications." })}>
               <Bell className="w-5 h-5" />
               <span className="absolute top-0 right-0 w-2 h-2 bg-primary rounded-full" />
             </Button>
-            <Button variant="outline" size="icon" className="hidden sm:flex h-9 w-9">
+            <Button variant="outline" size="icon" className="hidden sm:flex h-9 w-9" onClick={() => navigate("/onboarding")}>
               <User className="w-5 h-5" />
             </Button>
             <Button variant="ghost" size="icon" onClick={handleLogout} title="Log out" className="h-9 w-9">
