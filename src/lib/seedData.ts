@@ -567,6 +567,8 @@ export const mockPendingDrivers = [
     mdr_document_url: null,
     background_check_consent: true,
     background_check_consent_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+    stripe_account_id: null,
+    stripe_onboarding_complete: false,
   },
   {
     id: "driver-pending-002",
@@ -591,6 +593,8 @@ export const mockPendingDrivers = [
     mdr_document_url: null,
     background_check_consent: false,
     background_check_consent_at: null,
+    stripe_account_id: null,
+    stripe_onboarding_complete: false,
   },
   {
     id: "driver-pending-003",
@@ -615,6 +619,8 @@ export const mockPendingDrivers = [
     mdr_document_url: "https://example.com/mdr3.pdf",
     background_check_consent: true,
     background_check_consent_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
+    stripe_account_id: null,
+    stripe_onboarding_complete: false,
   },
 ];
 
