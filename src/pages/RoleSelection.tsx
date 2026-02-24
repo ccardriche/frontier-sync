@@ -17,7 +17,7 @@ const roles = [
       "Escrow payment protection"
     ],
     color: "primary",
-    path: "/dashboard/shipper"
+    path: "/auth?tab=signup"
   },
   {
     id: "driver",
@@ -31,7 +31,7 @@ const roles = [
       "Build your reputation & ratings"
     ],
     color: "accent",
-    path: "/dashboard/driver"
+    path: "/auth?tab=signup"
   },
   {
     id: "landowner",
@@ -45,7 +45,7 @@ const roles = [
       "Passive income generation"
     ],
     color: "success",
-    path: "/dashboard/landowner"
+    path: "/auth?tab=signup"
   }
 ];
 
@@ -110,7 +110,7 @@ const RoleSelection = () => {
                   </ul>
                   <Button variant="hero" className="w-full" asChild>
                     <Link to={role.path}>
-                      Continue as {role.title}
+                      Get Started as {role.title}
                       <ArrowRight className="w-4 h-4" />
                     </Link>
                   </Button>
