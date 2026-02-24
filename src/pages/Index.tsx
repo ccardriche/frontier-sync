@@ -1,7 +1,8 @@
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import anchorLogo from "@/assets/anchor-logo.png";
 import { useNavigate } from "react-router-dom";
-import { Truck, MapPin, Users, Brain, ArrowRight, Zap, Globe, Shield } from "lucide-react";
+import { Truck, MapPin, Users, Brain, ArrowRight, Zap, Globe, Shield, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -236,20 +237,58 @@ const CTA = ({ navigate }: { navigate: (path: string) => void }) => {
   );
 };
 
-const Navbar = ({ navigate }: { navigate: (path: string) => void }) => (
-  <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-border/30">
-    <div className="container flex items-center justify-between px-4 h-16">
-      <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
-        <img src={anchorLogo} alt="Anchor Logo" className="w-14 h-14 rounded" />
-        <span className="font-display text-xl font-bold text-primary">ANCHOR</span>
+const Navbar = ({ navigate }: { navigate: (path: string) => void }) => {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  return (
+    <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-border/30">
+      <div className="container flex items-center justify-between px-4 h-16">
+        <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
+          <img src={anchorLogo} alt="Anchor Logo" className="w-14 h-14 rounded" />
+          <span className="font-display text-xl font-bold text-primary">ANCHOR</span>
+        </div>
+
+        {/* Desktop buttons */}
+        <div className="hidden sm:flex items-center gap-3">
+          <Button variant="ghost" size="sm" onClick={() => navigate("/auth?tab=login")}>Sign In</Button>
+          <Button variant="hero" size="sm" onClick={() => navigate("/auth?tab=signup")}>Sign Up</Button>
+        </div>
+
+        {/* Mobile hamburger */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="sm:hidden"
+          onClick={() => setMobileOpen(!mobileOpen)}
+          aria-label="Toggle menu"
+        >
+          {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        </Button>
       </div>
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" size="sm" onClick={() => navigate("/auth?tab=login")}>Sign In</Button>
-        <Button variant="hero" size="sm" onClick={() => navigate("/auth?tab=signup")}>Sign Up</Button>
-      </div>
-    </div>
-  </nav>
-);
+
+      {/* Mobile dropdown */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="sm:hidden border-t border-border/30 glass overflow-hidden"
+          >
+            <div className="container px-4 py-4 flex flex-col gap-3">
+              <Button variant="ghost" className="w-full justify-start" onClick={() => { navigate("/auth?tab=login"); setMobileOpen(false); }}>
+                Sign In
+              </Button>
+              <Button variant="hero" className="w-full" onClick={() => { navigate("/auth?tab=signup"); setMobileOpen(false); }}>
+                Sign Up
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </nav>
+  );
+};
 
 const Index = () => {
   const navigate = useNavigate();
