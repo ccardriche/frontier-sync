@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { MapPin, Clock, Eye, AlertCircle, Truck } from "lucide-react";
+import { MapPin, Clock, Eye, AlertCircle, Truck, Route, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -46,12 +46,20 @@ const formatBudget = (budgetCents: number | null) => {
   return `$${(budgetCents / 100).toLocaleString()}`;
 };
 
+const formatDistanceKm = (km: number | null) => {
+  if (!km) return null;
+  if (km < 1) return `${Math.round(km * 1000)} m`;
+  if (km < 10) return `${Number(km).toFixed(1)} km`;
+  return `${Math.round(Number(km))} km`;
+};
+
 const JobCard = ({ job, index }: JobCardProps) => {
   const [showBids, setShowBids] = useState(false);
   const [showTracking, setShowTracking] = useState(false);
   const createdAt = formatDistanceToNow(new Date(job.created_at), { addSuffix: true });
   
   const isActiveDelivery = ["enroute_pickup", "picked_up", "in_transit", "arrived"].includes(job.status);
+  const isBidJob = job.pricing_type === "bid";
 
   return (
     <>
@@ -67,6 +75,11 @@ const JobCard = ({ job, index }: JobCardProps) => {
                 <div className="flex items-center gap-3 mb-2">
                   <h3 className="font-semibold">{job.title}</h3>
                   {getStatusBadge(job.status)}
+                  {isBidJob ? (
+                    <Badge variant="bidding">Open Bid</Badge>
+                  ) : (
+                    <Badge variant="assigned">Fixed Rate</Badge>
+                  )}
                   {job.urgency && (
                     <Badge variant="warning" className="flex items-center gap-1">
                       <AlertCircle className="w-3 h-3" />
@@ -81,6 +94,12 @@ const JobCard = ({ job, index }: JobCardProps) => {
                       {job.pickup_label || "TBD"} → {job.drop_label || "TBD"}
                     </span>
                   )}
+                  {formatDistanceKm(job.distance_km) && (
+                    <span className="flex items-center gap-1 text-primary font-medium">
+                      <Route className="w-4 h-4" />
+                      {formatDistanceKm(job.distance_km)}
+                    </span>
+                  )}
                   <span className="flex items-center gap-1">
                     <Clock className="w-4 h-4" />
                     {createdAt}
@@ -89,9 +108,18 @@ const JobCard = ({ job, index }: JobCardProps) => {
               </div>
               <div className="flex items-center gap-4">
                 <div className="text-right">
-                  <div className="text-lg font-display font-bold text-primary">
-                    {formatBudget(job.budget_cents)}
-                  </div>
+                  {isBidJob ? (
+                    <>
+                      <div className="text-lg font-display font-bold text-primary">
+                        {formatBudget(job.min_budget_cents)} – {formatBudget(job.max_budget_cents)}
+                      </div>
+                      <p className="text-xs text-muted-foreground">bid range</p>
+                    </>
+                  ) : (
+                    <div className="text-lg font-display font-bold text-primary">
+                      {formatBudget(job.budget_cents)}
+                    </div>
+                  )}
                   <button
                     className="text-sm text-muted-foreground hover:text-primary transition-colors"
                     onClick={() => setShowBids(true)}

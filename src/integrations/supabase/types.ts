@@ -475,13 +475,18 @@ export type Database = {
           cargo_details: Json | null
           cargo_type: Database["public"]["Enums"]["cargo_type"] | null
           created_at: string
+          distance_km: number | null
           drop_label: string | null
           drop_lat: number | null
           drop_lng: number | null
           id: string
+          max_budget_cents: number | null
+          min_budget_cents: number | null
           pickup_label: string | null
           pickup_lat: number | null
           pickup_lng: number | null
+          pricing_type: string
+          scheduled_dropoff: string | null
           scheduled_pickup: string | null
           shipper_id: string
           status: Database["public"]["Enums"]["job_status"]
@@ -495,13 +500,18 @@ export type Database = {
           cargo_details?: Json | null
           cargo_type?: Database["public"]["Enums"]["cargo_type"] | null
           created_at?: string
+          distance_km?: number | null
           drop_label?: string | null
           drop_lat?: number | null
           drop_lng?: number | null
           id?: string
+          max_budget_cents?: number | null
+          min_budget_cents?: number | null
           pickup_label?: string | null
           pickup_lat?: number | null
           pickup_lng?: number | null
+          pricing_type?: string
+          scheduled_dropoff?: string | null
           scheduled_pickup?: string | null
           shipper_id: string
           status?: Database["public"]["Enums"]["job_status"]
@@ -515,13 +525,18 @@ export type Database = {
           cargo_details?: Json | null
           cargo_type?: Database["public"]["Enums"]["cargo_type"] | null
           created_at?: string
+          distance_km?: number | null
           drop_label?: string | null
           drop_lat?: number | null
           drop_lng?: number | null
           id?: string
+          max_budget_cents?: number | null
+          min_budget_cents?: number | null
           pickup_label?: string | null
           pickup_lat?: number | null
           pickup_lng?: number | null
+          pricing_type?: string
+          scheduled_dropoff?: string | null
           scheduled_pickup?: string | null
           shipper_id?: string
           status?: Database["public"]["Enums"]["job_status"]

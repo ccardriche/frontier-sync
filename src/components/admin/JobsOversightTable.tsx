@@ -65,6 +65,7 @@ export function JobsOversightTable({ jobs, isLoading, onUpdateStatus }: JobsOver
                   <TableHead>Title</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Route</TableHead>
+                  <TableHead>Distance</TableHead>
                   <TableHead>Cargo</TableHead>
                   <TableHead>Bids</TableHead>
                   <TableHead>Created</TableHead>
@@ -93,6 +94,9 @@ export function JobsOversightTable({ jobs, isLoading, onUpdateStatus }: JobsOver
                           {job.drop_label || "No drop"}
                         </div>
                       </div>
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {(job as any).distance_km ? `${Math.round(Number((job as any).distance_km))} km` : "—"}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1 text-sm">

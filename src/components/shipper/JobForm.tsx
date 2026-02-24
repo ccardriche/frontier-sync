@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { DollarSign, ArrowRight, Scale, Calendar } from "lucide-react";
+import { DollarSign, ArrowRight, Scale, Calendar, Route } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
   SelectContent,
@@ -16,6 +17,7 @@ import {
 import LocationInput, { LocationData } from "@/components/location/LocationInput";
 import { useCreateJob } from "@/hooks/useJobs";
 import { Database, Json } from "@/integrations/supabase/types";
+import { calculateDistance, formatDistance } from "@/lib/eta";
 
 type CargoType = Database["public"]["Enums"]["cargo_type"];
 
@@ -84,34 +86,41 @@ const JobForm = ({ onClose }: JobFormProps) => {
   const [dropDate, setDropDate] = useState("");
   const [weight, setWeight] = useState("");
   const [urgency, setUrgency] = useState(false);
+  const [pricingType, setPricingType] = useState<"fixed" | "bid">("bid");
+  const [maxBudget, setMaxBudget] = useState("");
+  const [minBudget, setMinBudget] = useState("");
 
   const createJob = useCreateJob();
+
+  // Auto-calculate distance
+  const distanceKm = useMemo(() => {
+    if (!pickupLocation || !dropLocation) return null;
+    return calculateDistance(
+      { lat: pickupLocation.lat, lng: pickupLocation.lng },
+      { lat: dropLocation.lat, lng: dropLocation.lng }
+    );
+  }, [pickupLocation, dropLocation]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validation
-    if (!cargoType) {
-      return;
+    if (!cargoType || !pickupLocation || !dropLocation) return;
+    if (!weight || parseFloat(weight) <= 0) return;
+    if (!dropDate) return;
+
+    if (pricingType === "fixed" && (!budget || parseFloat(budget) <= 0)) return;
+    if (pricingType === "bid") {
+      if (!maxBudget || !minBudget) return;
+      if (parseFloat(minBudget) > parseFloat(maxBudget)) return;
     }
 
-    if (!pickupLocation) {
-      return;
-    }
-
-    if (!dropLocation) {
-      return;
-    }
-
-    if (!weight || parseFloat(weight) <= 0) {
-      return;
-    }
-
-    const budgetCents = budget ? Math.round(parseFloat(budget) * 100) : null;
+    const budgetCents = pricingType === "fixed" ? Math.round(parseFloat(budget) * 100) : null;
+    const maxBudgetCents = pricingType === "bid" ? Math.round(parseFloat(maxBudget) * 100) : null;
+    const minBudgetCents = pricingType === "bid" ? Math.round(parseFloat(minBudget) * 100) : null;
     const weightKg = parseFloat(weight);
     const scheduledPickup = pickupDate ? new Date(pickupDate).toISOString() : null;
+    const scheduledDropoff = new Date(dropDate).toISOString();
 
-    // Build cargo details with location metadata
     const cargoDetails: Json = {
       type: cargoType,
       ...(pickupLocation && !pickupLocation.verified && {
@@ -142,15 +151,29 @@ const JobForm = ({ onClose }: JobFormProps) => {
       drop_lng: dropLocation.lng,
       budget_cents: budgetCents,
       scheduled_pickup: scheduledPickup,
+      scheduled_dropoff: scheduledDropoff,
       weight_kg: weightKg,
       urgency,
       status: "posted",
+      distance_km: distanceKm ? Math.round(distanceKm * 10) / 10 : null,
+      pricing_type: pricingType,
+      max_budget_cents: maxBudgetCents,
+      min_budget_cents: minBudgetCents,
     });
 
     onClose();
   };
 
-  const isFormValid = cargoType && pickupLocation && dropLocation && weight && parseFloat(weight) > 0;
+  const isFormValid =
+    cargoType &&
+    pickupLocation &&
+    dropLocation &&
+    weight &&
+    parseFloat(weight) > 0 &&
+    dropDate &&
+    (pricingType === "fixed"
+      ? budget && parseFloat(budget) > 0
+      : maxBudget && minBudget && parseFloat(minBudget) <= parseFloat(maxBudget));
 
   return (
     <motion.div
@@ -210,34 +233,24 @@ const JobForm = ({ onClose }: JobFormProps) => {
               />
             </div>
 
-            {/* Budget, Dates, Weight */}
-            <div className="grid md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="budget">Proposed Budget (USD)</Label>
-                <div className="relative">
-                  <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="budget"
-                    placeholder="500"
-                    className="pl-10"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={budget}
-                    onChange={(e) => setBudget(e.target.value)}
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Max budget. Drivers can bid below.
-                </p>
+            {/* Distance Display */}
+            {distanceKm !== null && (
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 border border-border">
+                <Route className="w-4 h-4 text-primary" />
+                <span className="text-sm font-medium">Estimated Distance:</span>
+                <span className="text-sm font-bold text-primary">{formatDistance(distanceKm)}</span>
               </div>
+            )}
+
+            {/* Dates */}
+            <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="pickupDate">Pickup Date</Label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
                     id="pickupDate"
-                    type="date"
+                    type="datetime-local"
                     className="pl-10"
                     value={pickupDate}
                     onChange={(e) => setPickupDate(e.target.value)}
@@ -245,24 +258,128 @@ const JobForm = ({ onClose }: JobFormProps) => {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="weight">
-                  Total Weight (kg) <span className="text-destructive">*</span>
+                <Label htmlFor="dropDate">
+                  Drop-off Date/Time <span className="text-destructive">*</span>
                 </Label>
                 <div className="relative">
-                  <Scale className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
-                    id="weight"
-                    placeholder="1000"
+                    id="dropDate"
+                    type="datetime-local"
                     className="pl-10"
-                    type="number"
-                    min="0"
-                    step="0.1"
-                    value={weight}
-                    onChange={(e) => setWeight(e.target.value)}
+                    value={dropDate}
+                    onChange={(e) => setDropDate(e.target.value)}
                     required
                   />
                 </div>
               </div>
+            </div>
+
+            {/* Weight */}
+            <div className="space-y-2">
+              <Label htmlFor="weight">
+                Total Weight (kg) <span className="text-destructive">*</span>
+              </Label>
+              <div className="relative">
+                <Scale className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  id="weight"
+                  placeholder="1000"
+                  className="pl-10"
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  value={weight}
+                  onChange={(e) => setWeight(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Pricing Mode */}
+            <div className="space-y-3">
+              <Label>
+                Pricing Mode <span className="text-destructive">*</span>
+              </Label>
+              <RadioGroup
+                value={pricingType}
+                onValueChange={(val) => setPricingType(val as "fixed" | "bid")}
+                className="flex gap-4"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="fixed" id="pricing-fixed" />
+                  <Label htmlFor="pricing-fixed" className="cursor-pointer">Fixed Rate</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="bid" id="pricing-bid" />
+                  <Label htmlFor="pricing-bid" className="cursor-pointer">Open for Bidding</Label>
+                </div>
+              </RadioGroup>
+
+              {pricingType === "fixed" ? (
+                <div className="space-y-2">
+                  <Label htmlFor="budget">
+                    Fixed Rate (USD) <span className="text-destructive">*</span>
+                  </Label>
+                  <div className="relative">
+                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      id="budget"
+                      placeholder="500"
+                      className="pl-10"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={budget}
+                      onChange={(e) => setBudget(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="maxBudget">
+                      Maximum Price (USD) <span className="text-destructive">*</span>
+                    </Label>
+                    <div className="relative">
+                      <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input
+                        id="maxBudget"
+                        placeholder="1000"
+                        className="pl-10"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={maxBudget}
+                        onChange={(e) => setMaxBudget(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground">Highest you're willing to pay</p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="minBudget">
+                      Minimum Price (USD) <span className="text-destructive">*</span>
+                    </Label>
+                    <div className="relative">
+                      <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input
+                        id="minBudget"
+                        placeholder="500"
+                        className="pl-10"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={minBudget}
+                        onChange={(e) => setMinBudget(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground">Lowest you'd accept</p>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Urgency Toggle */}
