@@ -49,20 +49,20 @@ const ShipperDashboard = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border glass sticky top-0 z-50">
-        <div className="container px-4 py-4 flex items-center justify-between">
+        <div className="container px-4 py-3 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <h1 className="text-xl font-display font-bold text-primary">PIONEER NEXUS</h1>
-            <Badge variant="glow">Shipper</Badge>
+            <h1 className="text-lg sm:text-xl font-display font-bold text-primary">ANCHOR</h1>
+            <Badge variant="glow" className="hidden sm:inline-flex">Shipper</Badge>
           </Link>
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" className="relative">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <Button variant="ghost" size="icon" className="relative h-9 w-9">
               <Bell className="w-5 h-5" />
               <span className="absolute top-0 right-0 w-2 h-2 bg-primary rounded-full" />
             </Button>
-            <Button variant="outline" size="icon">
+            <Button variant="outline" size="icon" className="hidden sm:flex h-9 w-9">
               <User className="w-5 h-5" />
             </Button>
-            <Button variant="ghost" size="icon" onClick={handleLogout} title="Log out">
+            <Button variant="ghost" size="icon" onClick={handleLogout} title="Log out" className="h-9 w-9">
               <LogOut className="w-5 h-5" />
             </Button>
           </div>

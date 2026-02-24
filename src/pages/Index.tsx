@@ -48,7 +48,7 @@ const Hero = () => {
             className="text-5xl md:text-7xl font-display font-bold mb-6 text-glow"
           >
             <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-              PIONEER NEXUS
+              ANCHOR
             </span>
           </motion.h1>
 
@@ -175,7 +175,7 @@ const Features = () => {
             Built for the <span className="text-primary text-glow">Future</span>
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Pioneer Nexus combines cutting-edge AI with battle-tested logistics infrastructure
+            ANCHOR combines cutting-edge AI with battle-tested logistics infrastructure
           </p>
         </motion.div>
 
@@ -223,7 +223,7 @@ const CTA = () => {
                 Ready to <span className="text-primary text-glow">Transform</span> Your Logistics?
               </h2>
               <p className="text-muted-foreground text-lg mb-8 max-w-2xl mx-auto">
-                Join the next generation of logistics operators. Whether you ship, drive, or own infrastructure — Pioneer Nexus has you covered.
+                Join the next generation of logistics operators. Whether you ship, drive, or own infrastructure — ANCHOR has you covered.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link to="/roles">

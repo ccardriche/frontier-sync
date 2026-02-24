@@ -29,7 +29,7 @@ const AIAssistant = () => {
     {
       id: "1",
       role: "assistant",
-      content: "Hello! I'm Nexus AI, your intelligent logistics assistant. I have access to real-time platform data and can help you track shipments, find jobs, manage hubs, and answer any logistics questions. What can I help you with today?",
+      content: "Hello! I'm Anchor AI, your intelligent logistics assistant. I have access to real-time platform data and can help you track shipments, find jobs, manage hubs, and answer any logistics questions. What can I help you with today?",
       timestamp: new Date()
     }
   ]);
@@ -163,7 +163,7 @@ const AIAssistant = () => {
                     </div>
                     <div>
                       <CardTitle className="text-base flex items-center gap-2">
-                        Nexus AI
+                        Anchor AI
                         <Sparkles className="w-4 h-4 text-primary" />
                       </CardTitle>
                       <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
