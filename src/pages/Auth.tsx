@@ -9,7 +9,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
 import { Loader2, Truck, Package, MapPin } from "lucide-react";
-import anchorLogo from "@/assets/anchor-logo.png";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -147,7 +146,9 @@ const Auth = () => {
       >
         {/* Logo */}
         <div className="text-center mb-8">
-          <img src={anchorLogo} alt="ANCHOR" className="h-20 mx-auto object-contain mb-2" />
+          <h1 className="text-3xl font-display font-bold text-primary mb-2">
+            ANCHOR
+          </h1>
           <p className="text-muted-foreground">
             Connect. Ship. Deliver.
           </p>

@@ -2,7 +2,6 @@ import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { Plus, Filter, Bell, User, Package, LogOut, Gavel } from "lucide-react";
-import anchorLogo from "@/assets/anchor-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -52,7 +51,7 @@ const ShipperDashboard = () => {
       <header className="border-b border-border glass sticky top-0 z-50">
         <div className="container px-4 py-3 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <img src={anchorLogo} alt="ANCHOR" className="h-8 object-contain" />
+            <h1 className="text-lg sm:text-xl font-display font-bold text-primary">ANCHOR</h1>
             <Badge variant="glow" className="hidden sm:inline-flex">Shipper</Badge>
           </Link>
           <div className="flex items-center gap-2 sm:gap-4">
