@@ -23,8 +23,8 @@ const RecurringRoutesSection = () => {
       transition={{ delay: 0.15 }}
       className="mb-8"
     >
-      <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
-        <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-4">
+        <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
           <CollapsibleTrigger asChild>
             <Button variant="ghost" className="flex items-center gap-2 p-0 h-auto hover:bg-transparent">
               <Repeat className="w-5 h-5 text-primary" />
@@ -41,24 +41,25 @@ const RecurringRoutesSection = () => {
               )}
             </Button>
           </CollapsibleTrigger>
+        </Collapsible>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowForm(true)}
-            className="gap-1"
-          >
-            <Plus className="w-4 h-4" />
-            New Route
-          </Button>
-        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setShowForm(true)}
+          className="gap-1"
+        >
+          <Plus className="w-4 h-4" />
+          New Route
+        </Button>
+      </div>
 
-        <AnimatePresence>
-          {showForm && <RecurringRouteForm onClose={() => setShowForm(false)} />}
-        </AnimatePresence>
+      <AnimatePresence>
+        {showForm && <RecurringRouteForm onClose={() => setShowForm(false)} />}
+      </AnimatePresence>
 
-        <CollapsibleContent>
-
+      {isExpanded && (
+        <>
           {isLoading && (
             <div className="space-y-3">
               {[1, 2].map((i) => (
@@ -109,8 +110,8 @@ const RecurringRoutesSection = () => {
               ))}
             </div>
           )}
-        </CollapsibleContent>
-      </Collapsible>
+        </>
+      )}
     </motion.div>
   );
 };
