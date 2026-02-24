@@ -1,17 +1,23 @@
 
-## Fix Role Page Buttons to Route Through Auth
 
-### Problem
-The `/roles` page has three "Continue as..." buttons that link directly to dashboard pages (`/dashboard/shipper`, `/dashboard/driver`, `/dashboard/landowner`), bypassing authentication entirely. Users who aren't logged in get sent to a dashboard that won't work.
+## Add Sign In / Sign Up Buttons to Homepage Header
 
-### Solution
-Update the RoleSelection page so each role button navigates to `/auth?tab=signup` instead of directly to dashboards. After signing up and logging in, users will naturally flow through the onboarding process.
+Add a sticky navigation header to the homepage (`src/pages/Index.tsx`) with the ANCHOR logo on the left and Sign In / Sign Up buttons on the right.
 
 ### Changes
 
-**`src/pages/RoleSelection.tsx`**
-- Change each role's `path` from `/dashboard/shipper` (etc.) to `/auth?tab=signup`
-- Update button text from "Continue as Shipper" to "Get Started as Shipper" (clearer intent)
-- The existing auth flow already handles redirecting authenticated users to onboarding then to the correct dashboard
+**File: `src/pages/Index.tsx`**
 
-This is a single-file change — just updating the 3 role paths and button labels in the `roles` array at the top of the file.
+1. Create a `Navbar` component inside the file that renders a fixed/sticky top bar with:
+   - "ANCHOR" logo/text on the left (clicking it scrolls to top or stays on `/`)
+   - Two buttons on the right:
+     - "Sign In" -- navigates to `/auth?tab=login` (outline/ghost style)
+     - "Sign Up" -- navigates to `/auth?tab=signup` (primary/hero style)
+   - Glass/transparent background with backdrop blur to match the dark theme
+
+2. Render `<Navbar navigate={navigate} />` as the first child inside the main `<div>` in the `Index` component.
+
+3. Add a small top padding to the Hero section so content doesn't hide behind the fixed navbar.
+
+No other files need changes -- the `/auth` route already exists and supports `?tab=login` and `?tab=signup` query parameters.
+
