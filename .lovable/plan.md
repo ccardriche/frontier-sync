@@ -1,46 +1,69 @@
 
 
-## Always Allow Navigation Home
+# Enhanced Driver Stop Detail View
 
-Several pages are missing a way to navigate back to the homepage. This plan adds a clickable ANCHOR logo (with the anchor-logo image) that links to `/` on every page that currently lacks one.
+## Overview
+Build a new stop-by-stop detail view for drivers on active jobs, inspired by the reference screenshot. This adds a dedicated page/sheet that shows each stop with full address, location notes, contact info, a task checklist (review order details, take photos), additional notes, and a help button.
 
-### Pages that already have home navigation (no changes needed)
-- Index (homepage) -- has navbar with logo
-- ShipperDashboard -- has `Link to="/"`
-- DriverDashboard -- has `Link to="/"`
-- LandownerDashboard -- has `Link to="/"`
-- RoleSelection -- has `Link to="/"`
+## What Changes
 
-### Pages that need home navigation added
+### 1. New Component: `StopDetailView`
+Create `src/components/driver/StopDetailView.tsx` -- a full-screen sheet/page showing the current stop with:
+- **Header**: "Stop X of Y" with back button
+- **Address section**: Full address label from `job.pickup_label` / `job.drop_label` (or from `job_stops` if multi-stop)
+- **Location Notes**: Pulled from `cargo_details.pickup_metadata.notes` or `cargo_details.drop_metadata.notes`, with warning icon for special instructions (e.g. "Hand loading/unloading required")
+- **Location Contact**: Shipper name with a phone call button (fetched from `shipper_profiles` or `profiles` table)
+- **Tasks Checklist**: Interactive task list the driver must complete:
+  - "Review Pickup/Delivery Details" -- expandable card showing cargo type, weight, order info from `cargo_details`
+  - "Take Photo of Order" -- multi-photo capture (reusing existing photo upload pattern from `ProofOfDeliveryDialog`)
+- **Additional Notes**: Editable text area for driver notes
+- **Request Help button**: Opens a support ticket creation flow (inserts into `support_tickets` table)
 
-**1. Auth.tsx (~line 148-151)**
-- Make the "ANCHOR" heading clickable by wrapping it in a `Link to="/"` 
-- Add the anchor-logo image next to it, matching the homepage navbar style
-- Import `Link` from react-router-dom and `anchorLogo` from assets
+### 2. Update `ActiveJobBanner.tsx`
+- Add a "View Stop Details" button that opens the `StopDetailView` sheet
+- Pass current job data and stop index to the detail view
 
-**2. Onboarding.tsx**
-- Add a clickable ANCHOR logo + text at the top of the page that links to `/`
-- Import `Link` from react-router-dom and `anchorLogo` from assets
+### 3. Update `useActiveAssignment` Hook
+- Extend the query to also fetch `job_stops` for the active job, so multi-stop jobs show each stop in sequence
+- Fetch shipper contact info (name, phone) from `shipper_profiles` via the job's `shipper_id`
 
-**3. AdminDashboard.tsx**
-- Add a clickable ANCHOR logo + text in the header area that links to `/`
-- Import `Link` from react-router-dom and `anchorLogo` from assets
+### 4. Database Migration
+- Add a `driver_notes` (TEXT, nullable) column to the `job_stops` table so drivers can save per-stop notes
+- Add a `photos` (TEXT[], nullable, default '{}') column to the `job_stops` table for per-stop photo URLs
 
-**4. ShipperBidsPortal.tsx**
-- Add a clickable ANCHOR logo + text that links to `/`
+## Technical Details
 
-**5. DriverBidsPortal.tsx**
-- Add a clickable ANCHOR logo + text that links to `/`
+### StopDetailView Component Structure
+```
+Sheet (full height)
+  Header: "Stop {n} of {total}" + back arrow
+  Card: Address + city/state
+  Section: LOCATION NOTES (from cargo_details metadata)
+  Section: LOCATION CONTACT (shipper name + phone button)
+  Section: TASKS
+    - Collapsible: Review Pickup/Delivery Details (cargo type, weight, special instructions)
+    - Photo capture: Take Photo of Order (multi-photo, stored to job_stops.photos via Supabase Storage)
+  Section: ADDITIONAL NOTES (textarea, saved to job_stops.driver_notes)
+  Button: "Request help" (creates support_tickets row)
+```
 
-**6. NotFound.tsx**
-- Add a "Go Home" button or clickable logo linking to `/`
+### Data Flow
+- Stop data comes from: `job_stops` table (if multi-stop) OR derived from `jobs.pickup_*` / `jobs.drop_*` fields (single pickup/dropoff)
+- Contact info from: `shipper_profiles` joined via `jobs.shipper_id`
+- Photos uploaded to: `pod-files` storage bucket under `{userId}/{jobId}/stop-{stopId}/`
+- Notes saved to: new `job_stops.driver_notes` column
 
-### Consistent Pattern
-Each page will use the same logo pattern:
-```tsx
-<Link to="/" className="flex items-center gap-2">
-  <img src={anchorLogo} alt="Anchor Logo" className="w-8 h-8 rounded" />
-  <span className="font-display text-xl font-bold text-primary">ANCHOR</span>
-</Link>
+### Files to Create
+- `src/components/driver/StopDetailView.tsx` -- main stop detail component
+
+### Files to Modify
+- `src/components/driver/ActiveJobBanner.tsx` -- add "View Stop Details" button and state
+- `src/hooks/useBids.ts` -- extend `useActiveAssignment` to fetch stops and shipper contact
+
+### Migration SQL
+```sql
+ALTER TABLE public.job_stops 
+  ADD COLUMN driver_notes TEXT,
+  ADD COLUMN photos TEXT[] DEFAULT '{}';
 ```
 
