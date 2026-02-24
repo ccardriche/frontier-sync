@@ -1,6 +1,8 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { Package, Truck, MapPin, ArrowRight, CheckCircle } from "lucide-react";
+import { Package, Truck, MapPin, ArrowRight, CheckCircle, LogOut } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
@@ -127,11 +129,24 @@ const RoleSelection = () => {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6 }}
         >
-          <Link to="/">
-            <Button variant="ghost" className="text-muted-foreground">
-              ← Back to Home
+          <div className="flex items-center gap-4">
+            <Link to="/">
+              <Button variant="ghost" className="text-muted-foreground">
+                ← Back to Home
+              </Button>
+            </Link>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={async () => {
+                await supabase.auth.signOut();
+                toast({ title: "Logged out", description: "You can now test the signup flow." });
+              }}
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Log Out First
             </Button>
-          </Link>
+          </div>
         </motion.div>
       </div>
     </div>
