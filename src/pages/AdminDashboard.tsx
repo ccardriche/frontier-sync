@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import anchorLogo from "@/assets/anchor-logo.png";
 import { Shield, LogOut, DatabaseZap, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQueryClient } from "@tanstack/react-query";
@@ -93,6 +94,9 @@ export default function AdminDashboard() {
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <Link to="/" className="flex items-center gap-2 shrink-0">
+              <img src={anchorLogo} alt="Anchor Logo" className="w-8 h-8 rounded" />
+            </Link>
             <div className="p-1.5 sm:p-2 rounded-lg bg-destructive/10">
               <Shield className="h-5 w-5 sm:h-6 sm:w-6 text-destructive" />
             </div>

@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import anchorLogo from "@/assets/anchor-logo.png";
 import {
   ArrowLeft, Search, DollarSign, MapPin, Star, Clock,
   Play, Navigation, Filter, Briefcase, TrendingUp, CheckCircle
@@ -89,6 +90,9 @@ const DriverBidsPortal = () => {
       <header className="border-b border-border glass sticky top-0 z-50">
         <div className="container px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
+            <Link to="/" className="shrink-0">
+              <img src={anchorLogo} alt="Anchor Logo" className="w-8 h-8 rounded" />
+            </Link>
             <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard/driver")}>
               <ArrowLeft className="w-5 h-5" />
             </Button>
