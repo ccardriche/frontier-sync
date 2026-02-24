@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Truck, MapPin, Users, Brain, ArrowRight, Zap, Globe, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -18,7 +18,7 @@ const staggerContainer = {
   }
 };
 
-const Hero = () => {
+const Hero = ({ navigate }: { navigate: (path: string) => void }) => {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Effects */}
@@ -73,17 +73,13 @@ const Hero = () => {
             variants={fadeInUp}
             className="flex flex-col sm:flex-row gap-4 justify-center"
           >
-            <Link to="/dashboard">
-              <Button variant="hero" size="xl" className="w-full sm:w-auto">
-                Launch Command Center
-                <ArrowRight className="w-5 h-5" />
-              </Button>
-            </Link>
-            <Link to="/roles">
-              <Button variant="heroOutline" size="xl" className="w-full sm:w-auto">
-                Choose Your Role
-              </Button>
-            </Link>
+            <Button variant="hero" size="xl" className="w-full sm:w-auto" onClick={() => navigate("/dashboard")}>
+              Launch Command Center
+              <ArrowRight className="w-5 h-5" />
+            </Button>
+            <Button variant="heroOutline" size="xl" className="w-full sm:w-auto" onClick={() => navigate("/roles")}>
+              Choose Your Role
+            </Button>
           </motion.div>
         </motion.div>
 
@@ -205,7 +201,7 @@ const Features = () => {
   );
 };
 
-const CTA = () => {
+const CTA = ({ navigate }: { navigate: (path: string) => void }) => {
   return (
     <section className="py-24 relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-glow" />
@@ -226,12 +222,10 @@ const CTA = () => {
                 Join the next generation of logistics operators. Whether you ship, drive, or own infrastructure — ANCHOR has you covered.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link to="/onboarding">
-                  <Button variant="hero" size="lg">
-                    Get Started Now
-                    <ArrowRight className="w-5 h-5" />
-                  </Button>
-                </Link>
+                <Button variant="hero" size="lg" onClick={() => navigate("/onboarding")}>
+                  Get Started Now
+                  <ArrowRight className="w-5 h-5" />
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -242,11 +236,12 @@ const CTA = () => {
 };
 
 const Index = () => {
+  const navigate = useNavigate();
   return (
     <div className="min-h-screen bg-background">
-      <Hero />
+      <Hero navigate={navigate} />
       <Features />
-      <CTA />
+      <CTA navigate={navigate} />
     </div>
   );
 };
