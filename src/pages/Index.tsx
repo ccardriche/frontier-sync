@@ -226,7 +226,7 @@ const CTA = () => {
                 Join the next generation of logistics operators. Whether you ship, drive, or own infrastructure — ANCHOR has you covered.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link to="/roles">
+                <Link to="/onboarding">
                   <Button variant="hero" size="lg">
                     Get Started Now
                     <ArrowRight className="w-5 h-5" />
