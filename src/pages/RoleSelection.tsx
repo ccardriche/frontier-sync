@@ -89,9 +89,14 @@ const RoleSelection = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.15 }}
             >
-              <Card 
-                variant="glow" 
-                className="h-full hover:scale-[1.02] transition-all duration-300 group cursor-pointer"
+              <div 
+                role="button"
+                tabIndex={0}
+                className="h-full rounded-xl bg-card border border-border shadow-card border-glow hover:scale-[1.02] transition-all duration-300 group cursor-pointer text-card-foreground"
+                onClick={() => navigate(role.path)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") navigate(role.path);
+                }}
               >
                 <CardHeader>
                   <div className={`w-16 h-16 rounded-xl bg-${role.color}/10 flex items-center justify-center mb-4 group-hover:bg-${role.color}/20 transition-colors`}>
@@ -111,16 +116,12 @@ const RoleSelection = () => {
                       </li>
                     ))}
                   </ul>
-                  <Button 
-                    variant="hero" 
-                    className="w-full" 
-                    onClick={() => navigate(role.path)}
-                  >
+                  <div className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium w-full h-11 px-8 rounded-md bg-primary text-primary-foreground shadow-hero">
                     Get Started as {role.title}
                     <ArrowRight className="w-4 h-4" />
-                  </Button>
+                  </div>
                 </CardContent>
-              </Card>
+              </div>
             </motion.div>
           ))}
         </div>
