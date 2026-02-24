@@ -224,7 +224,7 @@ const CTA = ({ navigate }: { navigate: (path: string) => void }) => {
                 Join the next generation of logistics operators. Whether you ship, drive, or own infrastructure — ANCHOR has you covered.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button variant="hero" size="lg" onClick={() => navigate("/onboarding")}>
+                <Button variant="hero" size="lg" onClick={() => navigate("/auth")}>
                   Get Started Now
                   <ArrowRight className="w-5 h-5" />
                 </Button>
