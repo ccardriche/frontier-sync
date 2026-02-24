@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
+import anchorLogo from "@/assets/anchor-logo.png";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -146,9 +147,10 @@ const Auth = () => {
       >
         {/* Logo */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-display font-bold text-primary mb-2">
-            ANCHOR
-          </h1>
+          <Link to="/" className="inline-flex items-center gap-2 mb-2">
+            <img src={anchorLogo} alt="Anchor Logo" className="w-8 h-8 rounded" />
+            <span className="text-3xl font-display font-bold text-primary">ANCHOR</span>
+          </Link>
           <p className="text-muted-foreground">
             Connect. Ship. Deliver.
           </p>
