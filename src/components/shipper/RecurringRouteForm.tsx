@@ -108,9 +108,9 @@ const RecurringRouteForm = ({ onClose }: RecurringRouteFormProps) => {
 
   return (
     <motion.div
-      initial={{ opacity: 0, height: 0 }}
-      animate={{ opacity: 1, height: "auto" }}
-      exit={{ opacity: 0, height: 0 }}
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
       className="mb-8"
     >
       <Card variant="glow">
