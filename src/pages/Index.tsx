@@ -20,7 +20,7 @@ const staggerContainer = {
 
 const Hero = ({ navigate }: { navigate: (path: string) => void }) => {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
       {/* Background Effects */}
       <div className="absolute inset-0 bg-gradient-hero" />
       <div className="absolute inset-0 grid-pattern opacity-50" />
@@ -235,10 +235,25 @@ const CTA = ({ navigate }: { navigate: (path: string) => void }) => {
   );
 };
 
+const Navbar = ({ navigate }: { navigate: (path: string) => void }) => (
+  <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-border/30">
+    <div className="container flex items-center justify-between px-4 h-16">
+      <span className="font-display text-xl font-bold text-primary cursor-pointer" onClick={() => navigate("/")}>
+        ANCHOR
+      </span>
+      <div className="flex items-center gap-3">
+        <Button variant="ghost" size="sm" onClick={() => navigate("/auth?tab=login")}>Sign In</Button>
+        <Button variant="hero" size="sm" onClick={() => navigate("/auth?tab=signup")}>Sign Up</Button>
+      </div>
+    </div>
+  </nav>
+);
+
 const Index = () => {
   const navigate = useNavigate();
   return (
     <div className="min-h-screen bg-background">
+      <Navbar navigate={navigate} />
       <Hero navigate={navigate} />
       <Features />
       <CTA navigate={navigate} />
