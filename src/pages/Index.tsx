@@ -24,10 +24,10 @@ const Hero = ({ navigate }: { navigate: (path: string) => void }) => {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
       {/* Background Effects */}
-      <div className="absolute inset-0 bg-gradient-hero" />
-      <div className="absolute inset-0 grid-pattern opacity-50" />
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/10 rounded-full blur-3xl" />
+      <div className="absolute inset-0 bg-gradient-hero pointer-events-none" />
+      <div className="absolute inset-0 grid-pattern opacity-50 pointer-events-none" />
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/10 rounded-full blur-3xl pointer-events-none" />
       
       <div className="container relative z-10 px-4 py-20">
         <motion.div 
@@ -160,7 +160,7 @@ const Features = () => {
 
   return (
     <section className="py-24 relative overflow-hidden">
-      <div className="absolute inset-0 dot-pattern opacity-30" />
+      <div className="absolute inset-0 dot-pattern opacity-30 pointer-events-none" />
       
       <div className="container relative z-10 px-4">
         <motion.div 
@@ -206,7 +206,7 @@ const Features = () => {
 const CTA = ({ navigate }: { navigate: (path: string) => void }) => {
   return (
     <section className="py-24 relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-glow" />
+      <div className="absolute inset-0 bg-gradient-glow pointer-events-none" />
       
       <div className="container relative z-10 px-4">
         <motion.div 
