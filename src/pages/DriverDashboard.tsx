@@ -82,7 +82,7 @@ const DriverDashboard = () => {
               <Bell className="w-5 h-5" />
               <span className="absolute top-0 right-0 w-2 h-2 bg-primary rounded-full" />
             </Button>
-            <Button variant="outline" size="icon" className="hidden sm:flex h-9 w-9" onClick={() => navigate("/onboarding")}>
+            <Button variant="outline" size="icon" className="hidden sm:flex h-9 w-9" onClick={() => navigate("/dashboard/driver/profile")}>
               <User className="w-5 h-5" />
             </Button>
             <Button variant="ghost" size="icon" onClick={handleLogout} title="Log out" className="h-9 w-9">

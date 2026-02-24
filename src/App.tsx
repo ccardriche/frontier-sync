@@ -9,6 +9,7 @@ import RoleSelection from "./pages/RoleSelection";
 import ShipperDashboard from "./pages/ShipperDashboard";
 import DriverDashboard from "./pages/DriverDashboard";
 import LandownerDashboard from "./pages/LandownerDashboard";
+import DriverProfile from "./pages/DriverProfile";
 import AdminDashboard from "./pages/AdminDashboard";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
@@ -32,6 +33,7 @@ const App = () => (
           <Route path="/dashboard" element={<DashboardRedirect />} />
           <Route path="/dashboard/shipper" element={<ShipperDashboard />} />
           <Route path="/dashboard/driver" element={<DriverDashboard />} />
+          <Route path="/dashboard/driver/profile" element={<DriverProfile />} />
           <Route path="/dashboard/landowner" element={<LandownerDashboard />} />
           <Route path="/dashboard/admin" element={<AdminDashboard />} />
           <Route path="/dashboard/shipper/bids" element={<ShipperBidsPortal />} />
