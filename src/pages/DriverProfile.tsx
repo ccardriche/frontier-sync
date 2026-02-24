@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, User, Truck, Shield, Save, Loader2, CheckCircle, Clock, XCircle } from "lucide-react";
+import { ArrowLeft, User, Truck, Shield, Save, Loader2, CheckCircle, Clock, XCircle, Building2, ExternalLink, CreditCard } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,9 +44,17 @@ const VerificationBadge = ({ status }: { status: string | null }) => {
 
 const DriverProfile = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [stripeLoading, setStripeLoading] = useState(false);
+  const [stripeStatus, setStripeStatus] = useState<{
+    status: string;
+    details_submitted?: boolean;
+    payouts_enabled?: boolean;
+    external_accounts?: number;
+  } | null>(null);
 
   const [profile, setProfile] = useState({
     fullName: "",
@@ -119,10 +127,32 @@ const DriverProfile = () => {
       }
 
       setIsLoading(false);
+
+      // Check Stripe status
+      checkStripeStatus();
+    };
+
+    const checkStripeStatus = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke("stripe-connect", {
+          body: { action: "check_status" },
+        });
+        if (!error && data) {
+          setStripeStatus(data);
+        }
+      } catch (e) {
+        console.error("Failed to check Stripe status:", e);
+      }
     };
 
     loadProfile();
-  }, [navigate]);
+
+    // Check if returning from Stripe onboarding
+    if (searchParams.get("stripe_onboarding") === "complete") {
+      checkStripeStatus();
+      toast({ title: "Bank account setup", description: "Checking your account status..." });
+    }
+  }, [navigate, searchParams]);
 
   const handleSave = async () => {
     if (!userId) return;
@@ -163,6 +193,39 @@ const DriverProfile = () => {
       toast({ title: "Error", description: error.message || "Failed to save changes", variant: "destructive" });
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleStripeConnect = async () => {
+    setStripeLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("stripe-connect", {
+        body: { action: "create_account" },
+      });
+      if (error) throw error;
+      if (data?.url) {
+        window.location.href = data.url;
+      }
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message || "Failed to start bank setup", variant: "destructive" });
+      setStripeLoading(false);
+    }
+  };
+
+  const handleStripeDashboard = async () => {
+    setStripeLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("stripe-connect", {
+        body: { action: "create_dashboard_link" },
+      });
+      if (error) throw error;
+      if (data?.url) {
+        window.open(data.url, "_blank");
+      }
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message || "Failed to open dashboard", variant: "destructive" });
+    } finally {
+      setStripeLoading(false);
     }
   };
 
@@ -228,7 +291,60 @@ const DriverProfile = () => {
             </CardContent>
           </Card>
 
-          {/* Personal Info */}
+          {/* Bank Account / Direct Deposit */}
+          <Card variant="glass" className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Building2 className="w-5 h-5 text-primary" />
+                Bank Account & Direct Deposit
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {stripeStatus?.status === "connected" && stripeStatus.details_submitted ? (
+                <>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="w-5 h-5 text-success" />
+                      <div>
+                        <p className="font-medium text-sm">Bank account connected</p>
+                        <p className="text-xs text-muted-foreground">
+                          {stripeStatus.payouts_enabled ? "Payouts enabled — ready for direct deposit" : "Account under review — payouts will be enabled soon"}
+                        </p>
+                      </div>
+                    </div>
+                    <Badge variant={stripeStatus.payouts_enabled ? "default" : "secondary"} className={stripeStatus.payouts_enabled ? "bg-success text-success-foreground" : ""}>
+                      {stripeStatus.payouts_enabled ? "Active" : "Pending"}
+                    </Badge>
+                  </div>
+                  <Separator />
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={handleStripeDashboard} disabled={stripeLoading}>
+                      {stripeLoading ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <ExternalLink className="w-4 h-4 mr-1" />}
+                      Manage Account
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={handleStripeConnect} disabled={stripeLoading}>
+                      <CreditCard className="w-4 h-4 mr-1" />
+                      Update Details
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm text-muted-foreground">
+                    Link your bank account to receive direct deposit payouts for completed jobs. Setup takes just a few minutes.
+                  </p>
+                  <Button onClick={handleStripeConnect} disabled={stripeLoading}>
+                    {stripeLoading ? (
+                      <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Setting up...</>
+                    ) : (
+                      <><Building2 className="w-4 h-4 mr-2" />Link Bank Account</>
+                    )}
+                  </Button>
+                </>
+              )}
+            </CardContent>
+          </Card>
+
           <Card variant="glass" className="mb-6">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">

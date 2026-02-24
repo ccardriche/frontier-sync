@@ -117,6 +117,8 @@ export type Database = {
           mdr_document_url: string | null
           phone: string
           selfie_url: string | null
+          stripe_account_id: string | null
+          stripe_onboarding_complete: boolean | null
           terms_accepted: boolean
           terms_accepted_at: string | null
           updated_at: string
@@ -143,6 +145,8 @@ export type Database = {
           mdr_document_url?: string | null
           phone: string
           selfie_url?: string | null
+          stripe_account_id?: string | null
+          stripe_onboarding_complete?: boolean | null
           terms_accepted?: boolean
           terms_accepted_at?: string | null
           updated_at?: string
@@ -169,6 +173,8 @@ export type Database = {
           mdr_document_url?: string | null
           phone?: string
           selfie_url?: string | null
+          stripe_account_id?: string | null
+          stripe_onboarding_complete?: boolean | null
           terms_accepted?: boolean
           terms_accepted_at?: string | null
           updated_at?: string
