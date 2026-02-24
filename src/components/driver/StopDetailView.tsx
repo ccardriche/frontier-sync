@@ -11,18 +11,23 @@ import {
   Loader2,
   CheckCircle2,
   Package,
+  Navigation,
+  Plus,
+  Pencil,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { Separator } from "@/components/ui/separator";
+import SignatureCanvas from "./SignatureCanvas";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import type { Tables } from "@/integrations/supabase/types";
@@ -66,16 +71,20 @@ const StopDetailView = ({
   onStopChange,
 }: StopDetailViewProps) => {
   const [driverNotes, setDriverNotes] = useState("");
+  const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [photos, setPhotos] = useState<string[]>([]);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [isSavingNotes, setIsSavingNotes] = useState(false);
   const [isRequestingHelp, setIsRequestingHelp] = useState(false);
   const [detailsReviewed, setDetailsReviewed] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [recipientName, setRecipientName] = useState("");
+  const [signature, setSignature] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const currentStop = stops[currentStopIndex];
   const totalStops = stops.length;
+  const isDropoff = currentStop?.stop_type === "dropoff" || currentStop?.stop_type === "drop";
 
   // Parse cargo details
   const cargoDetails = job.cargo_details as Record<string, any> | null;
@@ -83,6 +92,11 @@ const StopDetailView = ({
     currentStop?.stop_type === "pickup"
       ? cargoDetails?.pickup_metadata?.notes
       : cargoDetails?.drop_metadata?.notes;
+
+  // Build item summary line
+  const itemCount = cargoDetails?.item_count || 1;
+  const weightLbs = job.weight_kg ? Math.round(job.weight_kg * 2.205) : null;
+  const stopTypeLabel = isDropoff ? "DROP-OFF" : "PICK UP";
 
   const handlePhotoCapture = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -107,7 +121,6 @@ const StopDetailView = ({
       const newPhotos = [...photos, urlData.publicUrl];
       setPhotos(newPhotos);
 
-      // Save to job_stops if we have a real stop ID
       if (currentStop?.id && !currentStop.id.startsWith("virtual-")) {
         await supabase
           .from("job_stops")
@@ -136,6 +149,7 @@ const StopDetailView = ({
   const handleSaveNotes = async () => {
     if (!currentStop?.id || currentStop.id.startsWith("virtual-")) {
       toast({ title: "Notes saved locally", description: "Notes saved for this stop." });
+      setIsEditingNotes(false);
       return;
     }
 
@@ -146,6 +160,7 @@ const StopDetailView = ({
         .update({ driver_notes: driverNotes } as any)
         .eq("id", currentStop.id);
       toast({ title: "Notes saved", description: "Your notes have been saved." });
+      setIsEditingNotes(false);
     } catch (err: any) {
       toast({
         title: "Error",
@@ -185,7 +200,19 @@ const StopDetailView = ({
     }
   };
 
+  const handleDirections = () => {
+    if (currentStop) {
+      window.open(
+        `https://www.google.com/maps/dir/?api=1&destination=${currentStop.lat},${currentStop.lng}`,
+        "_blank"
+      );
+    }
+  };
+
   if (!currentStop) return null;
+
+  // Task numbering
+  let taskNum = 0;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -204,207 +231,332 @@ const StopDetailView = ({
             <SheetTitle className="text-lg font-display">
               Stop {currentStopIndex + 1} of {totalStops}
             </SheetTitle>
-            <Badge
-              variant={currentStop.stop_type === "pickup" ? "default" : "secondary"}
-              className="ml-auto"
-            >
-              {currentStop.stop_type === "pickup" ? "Pickup" : "Drop-off"}
-            </Badge>
           </div>
-          {/* Stop navigation dots */}
-          {totalStops > 1 && (
-            <div className="flex items-center justify-center gap-2 pt-2">
-              {stops.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => onStopChange(i)}
-                  className={`w-2.5 h-2.5 rounded-full transition-all ${
-                    i === currentStopIndex
-                      ? "bg-primary scale-125"
-                      : i < currentStopIndex
-                        ? "bg-primary/50"
-                        : "bg-muted-foreground/30"
-                  }`}
-                />
-              ))}
-            </div>
-          )}
         </SheetHeader>
 
-        <div className="p-4 space-y-4">
-          {/* Address Card */}
+        <div className="p-4 space-y-5">
+          {/* Address Card with stop number badge */}
           <Card>
             <CardContent className="p-4">
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-                  <MapPin className="w-5 h-5 text-primary" />
+                <div className="w-8 h-8 rounded-lg bg-foreground text-background flex items-center justify-center shrink-0 font-bold text-sm">
+                  {currentStopIndex + 1}
                 </div>
                 <div>
-                  <p className="font-semibold text-foreground">
+                  <p className="font-semibold text-foreground text-lg">
                     {currentStop.label || "Address not specified"}
                   </p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {currentStop.lat.toFixed(4)}, {currentStop.lng.toFixed(4)}
-                  </p>
                 </div>
+              </div>
+
+              {/* Item summary bar */}
+              <div className="flex items-center gap-2 mt-3 pl-11">
+                <div className="w-1 h-5 bg-warning rounded-full" />
+                <p className="text-sm font-semibold text-muted-foreground uppercase">
+                  {stopTypeLabel}:{" "}
+                  <span className="text-foreground">
+                    {itemCount} ITEM{itemCount > 1 ? "S" : ""}{" "}
+                    {weightLbs ? `WEIGHING ${weightLbs} LBS.` : job.weight_kg ? `WEIGHING ${job.weight_kg} KG.` : ""}
+                  </span>
+                </p>
               </div>
             </CardContent>
           </Card>
 
-          {/* Location Notes */}
-          {locationNotes && (
-            <Card className="border-warning/30">
-              <CardContent className="p-4">
-                <div className="flex items-start gap-3">
-                  <AlertTriangle className="w-5 h-5 text-warning shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-semibold text-warning uppercase tracking-wide">
-                      Location Notes
-                    </p>
-                    <p className="text-sm text-foreground mt-1">{locationNotes}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          {/* Directions Button */}
+          <Button
+            variant="outline"
+            className="w-full h-12 text-base font-medium"
+            onClick={handleDirections}
+          >
+            <Navigation className="w-5 h-5 mr-2" />
+            Directions
+          </Button>
+
+          {/* Distance / Pickup Time / ETA row */}
+          {job.scheduled_pickup && (
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <p className="text-xs text-muted-foreground">Distance to stop</p>
+                <p className="text-lg font-bold text-foreground">—</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">
+                  {isDropoff ? "Drop-off time" : "Pick up time"}
+                </p>
+                <p className="text-lg font-bold text-foreground">
+                  {new Date(job.scheduled_pickup).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">ETA</p>
+                <p className="text-lg font-bold text-foreground">—</p>
+              </div>
+            </div>
           )}
 
-          {/* Location Contact */}
-          {shipperContact && (
-            <Card>
-              <CardContent className="p-4">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-                  Location Contact
-                </p>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium text-foreground">
-                      {shipperContact.name || "Shipper"}
-                    </p>
-                    {shipperContact.phone && (
-                      <p className="text-sm text-muted-foreground">
-                        {shipperContact.phone}
-                      </p>
-                    )}
-                  </div>
-                  {shipperContact.phone && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        window.open(`tel:${shipperContact.phone}`, "_self")
-                      }
-                    >
-                      <Phone className="w-4 h-4 mr-1" />
-                      Call
-                    </Button>
-                  )}
+          <Separator />
+
+          {/* Location Notes */}
+          <div>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
+              Location Notes
+            </p>
+            {locationNotes ? (
+              <>
+                <p className="font-bold text-foreground">{locationNotes}</p>
+                <div className="flex items-center gap-2 mt-2">
+                  <AlertTriangle className="w-4 h-4 text-warning" />
+                  <span className="text-sm text-foreground">
+                    Hand loading/unloading is required.
+                  </span>
                 </div>
-              </CardContent>
-            </Card>
-          )}
+              </>
+            ) : (
+              <p className="text-sm text-muted-foreground">No special notes</p>
+            )}
+          </div>
+
+          <Separator />
+
+          {/* Location Contact */}
+          <div>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
+              Location Contact
+            </p>
+            <div className="flex items-center justify-between">
+              <p className="font-bold text-foreground uppercase">
+                {shipperContact?.name || "—"}
+              </p>
+              {shipperContact?.phone && (
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  className="rounded-lg"
+                  onClick={() => window.open(`tel:${shipperContact.phone}`, "_self")}
+                >
+                  <Phone className="w-4 h-4" />
+                </Button>
+              )}
+            </div>
+          </div>
+
+          <Separator />
 
           {/* Tasks Section */}
           <div>
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
               Tasks
             </p>
+            <p className="text-foreground font-medium mb-4">
+              Verify each task below to complete the stop
+            </p>
 
-            {/* Review Details */}
-            <Collapsible open={detailsOpen} onOpenChange={setDetailsOpen}>
-              <Card className="mb-3">
-                <CollapsibleTrigger asChild>
-                  <CardContent className="p-4 cursor-pointer">
-                    <div className="flex items-center gap-3">
-                      <Checkbox
-                        checked={detailsReviewed}
-                        onCheckedChange={(checked) =>
-                          setDetailsReviewed(checked as boolean)
-                        }
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                      <div className="flex-1">
-                        <p className="font-medium text-foreground">
-                          Review {currentStop.stop_type === "pickup" ? "Pickup" : "Delivery"} Details
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          Verify cargo and order information
-                        </p>
-                      </div>
-                      <ChevronDown
-                        className={`w-4 h-4 text-muted-foreground transition-transform ${
-                          detailsOpen ? "rotate-180" : ""
-                        }`}
-                      />
+            {/* Task 1: Review Details */}
+            <div className="flex items-start gap-3 mb-4">
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-xs font-bold ${
+                detailsReviewed
+                  ? "bg-success text-success-foreground"
+                  : "bg-muted text-muted-foreground"
+              }`}>
+                {detailsReviewed ? <CheckCircle2 className="w-5 h-5" /> : (taskNum = 1, taskNum)}
+              </div>
+
+              <Card className="flex-1">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-1 h-5 bg-accent rounded-full" />
+                      <p className="font-semibold text-foreground uppercase text-sm">
+                        REVIEW {isDropoff ? "DROP-OFF" : "PICKUP"} DETAILS
+                      </p>
                     </div>
-                  </CardContent>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <div className="px-4 pb-4 space-y-2 border-t border-border pt-3">
-                    <div className="flex items-center gap-2 text-sm">
-                      <Package className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-muted-foreground">Cargo:</span>
-                      <span className="font-medium">
-                        {job.cargo_type?.replace(/_/g, " ") || "Not specified"}
-                      </span>
-                    </div>
-                    {job.weight_kg && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <span className="text-muted-foreground ml-6">Weight:</span>
-                        <span className="font-medium">{job.weight_kg} kg</span>
-                      </div>
-                    )}
-                    {cargoDetails?.description && (
-                      <div className="text-sm ml-6">
-                        <span className="text-muted-foreground">Description: </span>
-                        <span>{cargoDetails.description}</span>
-                      </div>
-                    )}
-                    {cargoDetails?.special_instructions && (
-                      <div className="text-sm ml-6 p-2 rounded bg-warning/10 border border-warning/20">
-                        <span className="text-warning font-medium">Special: </span>
-                        <span>{cargoDetails.special_instructions}</span>
-                      </div>
+                    {!detailsReviewed ? (
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() => {
+                          setDetailsReviewed(true);
+                          setDetailsOpen(false);
+                        }}
+                      >
+                        Done
+                      </Button>
+                    ) : (
+                      <span className="text-sm text-muted-foreground">Reviewed</span>
                     )}
                   </div>
-                </CollapsibleContent>
-              </Card>
-            </Collapsible>
 
-            {/* Photo Capture */}
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3 mb-3">
-                  <Checkbox checked={photos.length > 0} disabled />
-                  <div className="flex-1">
-                    <p className="font-medium text-foreground">Take Photo of Order</p>
-                    <p className="text-sm text-muted-foreground">
-                      {photos.length > 0
-                        ? `${photos.length} photo(s) captured`
-                        : "Capture photos for proof"}
+                  {/* Order info */}
+                  <div className="space-y-1 text-sm">
+                    <p className="text-foreground">
+                      <span className="text-muted-foreground">Order ID: </span>
+                      {job.id.slice(0, 10).toUpperCase()}
                     </p>
+                    {cargoDetails?.po_number && (
+                      <p className="text-foreground">
+                        <span className="text-muted-foreground">PO Number: </span>
+                        {cargoDetails.po_number}
+                      </p>
+                    )}
                   </div>
-                </div>
 
-                {/* Photo previews */}
-                {photos.length > 0 && (
-                  <div className="flex gap-2 flex-wrap mb-3">
-                    {photos.map((url, i) => (
-                      <div key={i} className="relative w-16 h-16 rounded-md overflow-hidden border border-border">
-                        <img
-                          src={url}
-                          alt={`Stop photo ${i + 1}`}
-                          className="w-full h-full object-cover"
-                        />
-                        <button
-                          onClick={() => removePhoto(i)}
-                          className="absolute top-0 right-0 bg-destructive rounded-bl-md p-0.5"
-                        >
-                          <X className="w-3 h-3 text-destructive-foreground" />
+                  {/* Item count + show details */}
+                  <Collapsible open={detailsOpen} onOpenChange={setDetailsOpen}>
+                    <div className="flex items-center justify-between mt-3">
+                      <p className="text-sm text-foreground">
+                        {itemCount} Item{itemCount > 1 ? "s" : ""}
+                      </p>
+                      <CollapsibleTrigger asChild>
+                        <button className="text-sm text-muted-foreground flex items-center gap-1 hover:text-foreground">
+                          Show Details
+                          <ChevronDown className={`w-4 h-4 transition-transform ${detailsOpen ? "rotate-180" : ""}`} />
                         </button>
+                      </CollapsibleTrigger>
+                    </div>
+                    <CollapsibleContent>
+                      <div className="mt-3 space-y-2 border-t border-border pt-3">
+                        <div className="flex items-center gap-2 text-sm">
+                          <Package className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-muted-foreground">Cargo:</span>
+                          <span className="font-medium">
+                            {job.cargo_type?.replace(/_/g, " ") || "Not specified"}
+                          </span>
+                        </div>
+                        {job.weight_kg && (
+                          <div className="text-sm ml-6">
+                            <span className="text-muted-foreground">Weight: </span>
+                            <span className="font-medium">{job.weight_kg} kg ({weightLbs} lbs)</span>
+                          </div>
+                        )}
+                        {cargoDetails?.description && (
+                          <div className="text-sm ml-6">
+                            <span className="text-muted-foreground">Description: </span>
+                            <span>{cargoDetails.description}</span>
+                          </div>
+                        )}
+                        {cargoDetails?.special_instructions && (
+                          <div className="text-sm ml-6 p-2 rounded bg-warning/10 border border-warning/20">
+                            <span className="text-warning font-medium">Special: </span>
+                            <span>{cargoDetails.special_instructions}</span>
+                          </div>
+                        )}
                       </div>
-                    ))}
-                  </div>
-                )}
+                    </CollapsibleContent>
+                  </Collapsible>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Task 2 (drop-off only): Capture Recipient Name */}
+            {isDropoff && (
+              <div className="flex items-start gap-3 mb-4">
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-xs font-bold ${
+                  recipientName.trim()
+                    ? "bg-success text-success-foreground"
+                    : "bg-muted text-muted-foreground"
+                }`}>
+                  {recipientName.trim() ? <CheckCircle2 className="w-5 h-5" /> : (++taskNum, taskNum)}
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold text-foreground uppercase text-sm mb-2">
+                    Capture Recipient Name
+                  </p>
+                  <Input
+                    placeholder="Enter recipient name"
+                    value={recipientName}
+                    onChange={(e) => setRecipientName(e.target.value)}
+                    className="bg-card"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Task 3 (drop-off only): Recipient Signature */}
+            {isDropoff && (
+              <div className="flex items-start gap-3 mb-4">
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-xs font-bold ${
+                  signature
+                    ? "bg-success text-success-foreground"
+                    : "bg-muted text-muted-foreground"
+                }`}>
+                  {signature ? <CheckCircle2 className="w-5 h-5" /> : (++taskNum, taskNum)}
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold text-foreground uppercase text-sm mb-2">
+                    Recipient Signature
+                  </p>
+                  <SignatureCanvas onSignatureChange={setSignature} />
+                  {signature && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="mt-2 w-full"
+                      onClick={() => setSignature(null)}
+                    >
+                      Edit signature
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Task: Take Photo */}
+            <div className="flex items-start gap-3 mb-4">
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-xs font-bold ${
+                photos.length > 0
+                  ? "bg-success text-success-foreground"
+                  : "bg-muted text-muted-foreground"
+              }`}>
+                {photos.length > 0 ? <CheckCircle2 className="w-5 h-5" /> : (++taskNum, taskNum)}
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-foreground uppercase text-sm mb-3">
+                  Take Photo of {isDropoff ? "Drop-off" : "Pickup"} Order
+                </p>
+
+                {/* Photo grid with add button */}
+                <div className="flex gap-3 flex-wrap">
+                  {photos.map((url, i) => (
+                    <div
+                      key={i}
+                      className="relative w-24 h-24 rounded-lg overflow-hidden border border-border"
+                    >
+                      <img
+                        src={url}
+                        alt={`Stop photo ${i + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        onClick={() => removePhoto(i)}
+                        className="absolute top-1 right-1 w-5 h-5 bg-foreground/80 rounded-full flex items-center justify-center"
+                      >
+                        <X className="w-3 h-3 text-background" />
+                      </button>
+                      <div className="absolute bottom-1 right-1 w-5 h-5 bg-accent rounded-full flex items-center justify-center">
+                        <CheckCircle2 className="w-3 h-3 text-accent-foreground" />
+                      </div>
+                    </div>
+                  ))}
+                  {/* Add photo button */}
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploadingPhoto}
+                    className="w-24 h-24 rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 text-muted-foreground hover:border-foreground hover:text-foreground transition-colors"
+                  >
+                    {isUploadingPhoto ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <>
+                        <Plus className="w-5 h-5" />
+                        <span className="text-xs font-semibold uppercase">Add Photo</span>
+                      </>
+                    )}
+                  </button>
+                </div>
 
                 <input
                   ref={fileInputRef}
@@ -414,72 +566,78 @@ const StopDetailView = ({
                   className="hidden"
                   onChange={handlePhotoCapture}
                 />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploadingPhoto}
-                  className="w-full"
-                >
-                  {isUploadingPhoto ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin mr-1" />
-                      Uploading...
-                    </>
-                  ) : (
-                    <>
-                      <Camera className="w-4 h-4 mr-1" />
-                      Take Photo
-                    </>
-                  )}
-                </Button>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
+
+          <Separator />
 
           {/* Additional Notes */}
           <div>
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-              Additional Notes
-            </p>
-            <Textarea
-              placeholder="Add notes about this stop..."
-              value={driverNotes}
-              onChange={(e) => setDriverNotes(e.target.value)}
-              rows={3}
-            />
-            {driverNotes && (
+            <div className="flex items-center justify-between mb-1">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                Additional Notes
+              </p>
               <Button
-                variant="secondary"
-                size="sm"
-                onClick={handleSaveNotes}
-                disabled={isSavingNotes}
-                className="mt-2"
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                onClick={() => setIsEditingNotes(!isEditingNotes)}
               >
-                {isSavingNotes ? (
-                  <Loader2 className="w-4 h-4 animate-spin mr-1" />
-                ) : (
-                  <CheckCircle2 className="w-4 h-4 mr-1" />
-                )}
-                Save Notes
+                <Pencil className="w-4 h-4 text-muted-foreground" />
               </Button>
+            </div>
+            {isEditingNotes ? (
+              <div className="space-y-2">
+                <Textarea
+                  placeholder="Add notes about this stop..."
+                  value={driverNotes}
+                  onChange={(e) => setDriverNotes(e.target.value)}
+                  rows={3}
+                />
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleSaveNotes}
+                  disabled={isSavingNotes}
+                >
+                  {isSavingNotes ? (
+                    <Loader2 className="w-4 h-4 animate-spin mr-1" />
+                  ) : (
+                    <CheckCircle2 className="w-4 h-4 mr-1" />
+                  )}
+                  Save Notes
+                </Button>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                {driverNotes || "None"}
+              </p>
             )}
           </div>
 
-          {/* Request Help */}
-          <Button
-            variant="outline"
-            className="w-full border-destructive/30 text-destructive hover:bg-destructive/10"
-            onClick={handleRequestHelp}
-            disabled={isRequestingHelp}
-          >
-            {isRequestingHelp ? (
-              <Loader2 className="w-4 h-4 animate-spin mr-1" />
-            ) : (
-              <HelpCircle className="w-4 h-4 mr-1" />
-            )}
-            Request Help
-          </Button>
+          {/* Help Requests */}
+          <div>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+              Help Requests
+            </p>
+            <Button
+              variant="outline"
+              className="w-full h-12 text-base font-medium"
+              onClick={handleRequestHelp}
+              disabled={isRequestingHelp}
+            >
+              {isRequestingHelp ? (
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+              ) : (
+                <HelpCircle className="w-4 h-4 mr-2" />
+              )}
+              Request help
+            </Button>
+          </div>
+
+          {/* Bottom spacing */}
+          <div className="h-4" />
         </div>
       </SheetContent>
     </Sheet>
