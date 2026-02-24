@@ -240,7 +240,7 @@ const Navbar = ({ navigate }: { navigate: (path: string) => void }) => (
   <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-border/30">
     <div className="container flex items-center justify-between px-4 h-16">
       <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
-        <img src={anchorLogo} alt="Anchor Logo" className="w-8 h-8 rounded" />
+        <img src={anchorLogo} alt="Anchor Logo" className="w-14 h-14 rounded" />
         <span className="font-display text-xl font-bold text-primary">ANCHOR</span>
       </div>
       <div className="flex items-center gap-3">
