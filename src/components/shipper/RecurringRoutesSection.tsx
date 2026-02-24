@@ -53,10 +53,11 @@ const RecurringRoutesSection = () => {
           </Button>
         </div>
 
+        <AnimatePresence>
+          {showForm && <RecurringRouteForm onClose={() => setShowForm(false)} />}
+        </AnimatePresence>
+
         <CollapsibleContent>
-          <AnimatePresence>
-            {showForm && <RecurringRouteForm onClose={() => setShowForm(false)} />}
-          </AnimatePresence>
 
           {isLoading && (
             <div className="space-y-3">
