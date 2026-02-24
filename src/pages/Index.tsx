@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Truck, MapPin, Users, Brain, ArrowRight, Zap, Globe, Shield } from "lucide-react";
+import anchorLogo from "@/assets/anchor-logo.png";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -42,15 +43,10 @@ const Hero = () => {
             </span>
           </motion.div>
 
-          {/* Title */}
-          <motion.h1 
-            variants={fadeInUp}
-            className="text-5xl md:text-7xl font-display font-bold mb-6 text-glow"
-          >
-            <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-              ANCHOR
-            </span>
-          </motion.h1>
+          {/* Logo */}
+          <motion.div variants={fadeInUp} className="mb-6">
+            <img src={anchorLogo} alt="ANCHOR — Transports & Logistics" className="h-32 md:h-44 mx-auto object-contain" />
+          </motion.div>
 
           {/* Subtitle */}
           <motion.p 
