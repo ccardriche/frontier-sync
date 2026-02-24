@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { Plus, Bell, User, Building2, LogOut } from "lucide-react";
+import anchorLogo from "@/assets/anchor-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -30,7 +31,7 @@ const LandownerDashboard = () => {
       <header className="border-b border-border glass sticky top-0 z-50">
         <div className="container px-4 py-3 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <h1 className="text-lg sm:text-xl font-display font-bold text-primary">ANCHOR</h1>
+            <img src={anchorLogo} alt="ANCHOR" className="h-8 object-contain" />
             <Badge variant="success" className="hidden sm:inline-flex">Landowner</Badge>
           </Link>
           <div className="flex items-center gap-2 sm:gap-4">

@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Package, Truck, MapPin, ArrowRight, CheckCircle } from "lucide-react";
+import anchorLogo from "@/assets/anchor-logo.png";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
@@ -65,9 +66,7 @@ const RoleSelection = () => {
           animate={{ opacity: 1, y: 0 }}
         >
           <Link to="/" className="inline-block mb-8">
-            <h1 className="text-3xl font-display font-bold text-primary text-glow">
-              ANCHOR
-            </h1>
+            <img src={anchorLogo} alt="ANCHOR" className="h-16 mx-auto object-contain" />
           </Link>
           <h2 className="text-4xl md:text-5xl font-display font-bold mb-4">
             Choose Your <span className="text-primary">Role</span>
