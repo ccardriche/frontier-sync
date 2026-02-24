@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Package, Truck, MapPin, ArrowRight, CheckCircle, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -52,6 +52,7 @@ const roles = [
 ];
 
 const RoleSelection = () => {
+  const navigate = useNavigate();
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
       {/* Background Effects */}
@@ -110,11 +111,13 @@ const RoleSelection = () => {
                       </li>
                     ))}
                   </ul>
-                  <Button variant="hero" className="w-full" asChild>
-                    <Link to={role.path}>
-                      Get Started as {role.title}
-                      <ArrowRight className="w-4 h-4" />
-                    </Link>
+                  <Button 
+                    variant="hero" 
+                    className="w-full" 
+                    onClick={() => navigate(role.path)}
+                  >
+                    Get Started as {role.title}
+                    <ArrowRight className="w-4 h-4" />
                   </Button>
                 </CardContent>
               </Card>
