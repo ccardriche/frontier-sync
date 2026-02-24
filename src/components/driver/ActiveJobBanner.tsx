@@ -11,7 +11,8 @@ import {
   Loader2,
   Radio,
   Timer,
-  Route
+  Route,
+  ClipboardList
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -23,6 +24,7 @@ import { useETA } from "@/hooks/useETA";
 import { useDriverRouteOptimization } from "@/hooks/useRouteOptimization";
 import { Skeleton } from "@/components/ui/skeleton";
 import ProofOfDeliveryDialog from "./ProofOfDeliveryDialog";
+import StopDetailView from "./StopDetailView";
 import TrackingMap from "@/components/tracking/TrackingMap";
 import RouteOptimizationCard from "./RouteOptimizationCard";
 import { WhatsAppActions } from "@/components/whatsapp/WhatsAppActions";
@@ -69,6 +71,8 @@ const ActiveJobBanner = () => {
   const [showPodDialog, setShowPodDialog] = useState(false);
   const [showMap, setShowMap] = useState(false);
   const [showRouteOptimization, setShowRouteOptimization] = useState(false);
+  const [showStopDetail, setShowStopDetail] = useState(false);
+  const [currentStopIndex, setCurrentStopIndex] = useState(0);
   
   // Get job info early for location sharing hook
   const job = assignment?.job as Job | undefined;
@@ -271,6 +275,15 @@ const ActiveJobBanner = () => {
 
               {/* Action Buttons */}
               <div className="flex flex-wrap gap-3 mb-4">
+                {/* View Stop Details */}
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={() => setShowStopDetail(true)}
+                >
+                  <ClipboardList className="w-5 h-5" />
+                  Stop Details
+                </Button>
                 {(job.pickup_lat && job.pickup_lng) || (job.drop_lat && job.drop_lng) ? (
                   <Button 
                     variant="outline" 
@@ -428,6 +441,36 @@ const ActiveJobBanner = () => {
         onOpenChange={setShowPodDialog}
         jobId={job.id}
         onComplete={handlePodComplete}
+      />
+
+      {/* Stop Detail View */}
+      <StopDetailView
+        open={showStopDetail}
+        onOpenChange={setShowStopDetail}
+        job={job}
+        stops={assignment.stops || [
+          {
+            id: "virtual-pickup",
+            label: job.pickup_label,
+            lat: job.pickup_lat || 0,
+            lng: job.pickup_lng || 0,
+            stop_type: "pickup",
+            sequence_order: 0,
+            completed_at: null,
+          },
+          {
+            id: "virtual-dropoff",
+            label: job.drop_label,
+            lat: job.drop_lat || 0,
+            lng: job.drop_lng || 0,
+            stop_type: "dropoff",
+            sequence_order: 1,
+            completed_at: null,
+          },
+        ]}
+        currentStopIndex={currentStopIndex}
+        shipperContact={assignment.shipperContact || null}
+        onStopChange={setCurrentStopIndex}
       />
     </>
   );
