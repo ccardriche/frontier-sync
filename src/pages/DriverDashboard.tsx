@@ -55,12 +55,12 @@ const DriverDashboard = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border glass sticky top-0 z-50">
-        <div className="container px-4 py-4 flex items-center justify-between">
+        <div className="container px-4 py-3 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <h1 className="text-xl font-display font-bold text-primary">PIONEER NEXUS</h1>
-            <Badge variant="accent">Driver</Badge>
+            <h1 className="text-lg sm:text-xl font-display font-bold text-primary">ANCHOR</h1>
+            <Badge variant="accent" className="hidden sm:inline-flex">Driver</Badge>
           </Link>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <Button
               variant="ghost"
               size="sm"
@@ -71,20 +71,20 @@ const DriverDashboard = () => {
               <span className="font-semibold">Earnings</span>
             </Button>
             <div
-              className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-secondary cursor-pointer hover:bg-secondary/80 transition-colors"
+              className="flex items-center gap-1.5 px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg bg-secondary cursor-pointer hover:bg-secondary/80 transition-colors"
               onClick={() => setShowEarnings(true)}
             >
               <Wallet className="w-4 h-4 text-primary" />
-              <span className="font-semibold">{formatCurrency(stats?.walletBalance ?? 0)}</span>
+              <span className="font-semibold text-sm">{formatCurrency(stats?.walletBalance ?? 0)}</span>
             </div>
-            <Button variant="ghost" size="icon" className="relative">
+            <Button variant="ghost" size="icon" className="relative h-9 w-9">
               <Bell className="w-5 h-5" />
               <span className="absolute top-0 right-0 w-2 h-2 bg-primary rounded-full" />
             </Button>
-            <Button variant="outline" size="icon">
+            <Button variant="outline" size="icon" className="hidden sm:flex h-9 w-9">
               <User className="w-5 h-5" />
             </Button>
-            <Button variant="ghost" size="icon" onClick={handleLogout} title="Log out">
+            <Button variant="ghost" size="icon" onClick={handleLogout} title="Log out" className="h-9 w-9">
               <LogOut className="w-5 h-5" />
             </Button>
           </div>
@@ -110,23 +110,25 @@ const DriverDashboard = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-display font-bold">Available Jobs</h2>
-            <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <h2 className="text-xl sm:text-2xl font-display font-bold">Available Jobs</h2>
+            <div className="flex flex-wrap gap-2">
               <Button variant="outline" size="sm" onClick={() => navigate("/dashboard/driver/bids")}>
                 <Gavel className="w-4 h-4" />
-                Bid Portal
+                <span className="hidden sm:inline ml-1">Bid Portal</span>
               </Button>
               <CheckinHistorySheet />
-              <Input
-                placeholder="Search..."
-                className="w-48"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <Button variant="outline" size="icon">
-                <Filter className="w-4 h-4" />
-              </Button>
+              <div className="flex gap-2 flex-1 min-w-0">
+                <Input
+                  placeholder="Search..."
+                  className="w-full sm:w-48"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <Button variant="outline" size="icon" className="shrink-0">
+                  <Filter className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
           </div>
 

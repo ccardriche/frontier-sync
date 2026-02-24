@@ -147,7 +147,7 @@ const Auth = () => {
         {/* Logo */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-display font-bold text-primary mb-2">
-            PIONEER NEXUS
+            ANCHOR
           </h1>
           <p className="text-muted-foreground">
             Connect. Ship. Deliver.

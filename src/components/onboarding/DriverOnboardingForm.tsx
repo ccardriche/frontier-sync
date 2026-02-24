@@ -341,7 +341,7 @@ const DriverOnboardingForm = ({
           Criminal Background Check (via Checkr)
         </h3>
         <p className="text-sm text-muted-foreground">
-          All drivers must pass a criminal background check conducted through Checkr. By consenting below, you authorize Pioneer Nexus to initiate this screening.
+          All drivers must pass a criminal background check conducted through Checkr. By consenting below, you authorize ANCHOR to initiate this screening.
         </p>
         <div className="flex items-start gap-3">
           <Checkbox

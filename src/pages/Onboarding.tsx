@@ -97,7 +97,7 @@ const Onboarding = () => {
       if (roleError) throw roleError;
 
       toast({
-        title: "Welcome to Pioneer Nexus!",
+        title: "Welcome to ANCHOR!",
         description: "Your account is set up and ready to go.",
       });
 
@@ -147,7 +147,7 @@ const Onboarding = () => {
                 <CardHeader className="text-center">
                   <CardTitle className="text-2xl">Choose Your Role</CardTitle>
                   <CardDescription>
-                    Select how you'll use Pioneer Nexus
+                    Select how you'll use ANCHOR
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">

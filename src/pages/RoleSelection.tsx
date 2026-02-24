@@ -66,14 +66,14 @@ const RoleSelection = () => {
         >
           <Link to="/" className="inline-block mb-8">
             <h1 className="text-3xl font-display font-bold text-primary text-glow">
-              PIONEER NEXUS
+              ANCHOR
             </h1>
           </Link>
           <h2 className="text-4xl md:text-5xl font-display font-bold mb-4">
             Choose Your <span className="text-primary">Role</span>
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Select how you want to participate in the Pioneer Nexus network
+            Select how you want to participate in the ANCHOR network
           </p>
         </motion.div>
 

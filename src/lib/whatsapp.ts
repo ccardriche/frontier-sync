@@ -50,15 +50,15 @@ export function generateWhatsAppMessage(type: WhatsAppMessageType, details: JobD
   const messages: Record<WhatsAppMessageType, string> = {
     job_posted: `🚚 *New Job Posted*\n\n📦 ${details.title}\n📍 From: ${details.pickupLocation || "TBD"}\n📍 To: ${details.dropLocation || "TBD"}${details.budgetCents ? `\n💰 Budget: $${(details.budgetCents / 100).toFixed(2)}` : ""}\n\nInterested in this job? Reply to discuss details.`,
 
-    bid_received: `📬 *New Bid Received*\n\n📦 Job: ${details.title}\n👤 Driver: ${details.driverName || "A driver"}\n\nLogin to Pioneer Nexus to review the bid and accept or negotiate.`,
+    bid_received: `📬 *New Bid Received*\n\n📦 Job: ${details.title}\n👤 Driver: ${details.driverName || "A driver"}\n\nLogin to ANCHOR to review the bid and accept or negotiate.`,
 
     bid_accepted: `✅ *Bid Accepted!*\n\n📦 Job: ${details.title}\n📍 Pickup: ${details.pickupLocation || "TBD"}${details.scheduledPickup ? `\n🕐 Scheduled: ${details.scheduledPickup}` : ""}\n\nPlease confirm you're ready for pickup.`,
 
     pickup_reminder: `⏰ *Pickup Reminder*\n\n📦 Job: ${details.title}\n📍 Location: ${details.pickupLocation || "Check app for details"}${details.scheduledPickup ? `\n🕐 Time: ${details.scheduledPickup}` : ""}\n\nPlease confirm when you've arrived at the pickup location.`,
 
-    in_transit: `🚛 *Shipment In Transit*\n\n📦 ${details.title}\n👤 Driver: ${details.driverName || "Your assigned driver"}\n📍 Destination: ${details.dropLocation || "Check app"}\n\nTrack your shipment in the Pioneer Nexus app.`,
+    in_transit: `🚛 *Shipment In Transit*\n\n📦 ${details.title}\n👤 Driver: ${details.driverName || "Your assigned driver"}\n📍 Destination: ${details.dropLocation || "Check app"}\n\nTrack your shipment in the ANCHOR app.`,
 
-    delivery_confirmation: `✅ *Delivery Confirmed*\n\n📦 ${details.title}\n📍 Delivered to: ${details.dropLocation || "destination"}\n\nThank you for using Pioneer Nexus! Rate your experience in the app.`,
+    delivery_confirmation: `✅ *Delivery Confirmed*\n\n📦 ${details.title}\n📍 Delivered to: ${details.dropLocation || "destination"}\n\nThank you for using ANCHOR! Rate your experience in the app.`,
 
     support: `🆘 *Support Request*\n\n📦 Job: ${details.title}\n\nDescribe your issue and our team will assist you shortly.`,
   };
