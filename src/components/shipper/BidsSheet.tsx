@@ -57,7 +57,11 @@ const BidsSheet = ({ job, open, onOpenChange }: BidsSheetProps) => {
 
         <div className="space-y-4">
           <div className="flex items-center justify-between text-sm text-muted-foreground">
-            <span>Budget: {job?.budget_cents ? formatCurrency(job.budget_cents) : "—"}</span>
+            <span>
+              {job?.pricing_type === "bid"
+                ? `Range: ${job?.min_budget_cents ? formatCurrency(job.min_budget_cents) : "—"} – ${job?.max_budget_cents ? formatCurrency(job.max_budget_cents) : "—"}`
+                : `Fixed Rate: ${job?.budget_cents ? formatCurrency(job.budget_cents) : "—"}`}
+            </span>
             <span>{bids?.length || 0} {bids?.length === 1 ? "bid" : "bids"}</span>
           </div>
 

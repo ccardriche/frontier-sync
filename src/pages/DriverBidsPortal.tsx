@@ -205,6 +205,12 @@ const DriverBidsPortal = () => {
                                     {job.pickup_label || "TBD"} → {job.drop_label || "TBD"}
                                   </span>
                                 )}
+                                {job.distance_km && (
+                                  <span className="flex items-center gap-1 text-primary font-medium">
+                                    <Navigation className="w-3 h-3" />
+                                    {Math.round(Number(job.distance_km))} km
+                                  </span>
+                                )}
                                 {job.weight_kg && (
                                   <span className="flex items-center gap-1">
                                     <Navigation className="w-3 h-3" />
@@ -225,10 +231,21 @@ const DriverBidsPortal = () => {
                               </div>
                             </div>
                             <div className="text-right shrink-0">
-                              <p className="text-2xl font-display font-bold text-primary">
-                                {formatBudget(job.budget_cents)}
-                              </p>
-                              <p className="text-xs text-muted-foreground">budget</p>
+                              {job.pricing_type === "bid" ? (
+                                <>
+                                  <p className="text-2xl font-display font-bold text-primary">
+                                    {formatBudget(job.min_budget_cents)} – {formatBudget(job.max_budget_cents)}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">bid range</p>
+                                </>
+                              ) : (
+                                <>
+                                  <p className="text-2xl font-display font-bold text-primary">
+                                    {formatBudget(job.budget_cents)}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">fixed rate</p>
+                                </>
+                              )}
                             </div>
                           </div>
 
