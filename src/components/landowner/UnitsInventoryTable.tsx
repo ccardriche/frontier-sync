@@ -28,6 +28,7 @@ export const UnitsInventoryTable = ({ hubId, hubName }: Props) => {
   const deleteUnit = useDeleteHubUnit();
   const [showForm, setShowForm] = useState(false);
   const [inspectionUnit, setInspectionUnit] = useState<HubUnit | null>(null);
+  const [qrUnit, setQrUnit] = useState<HubUnit | null>(null);
 
   return (
     <Card variant="glass">
