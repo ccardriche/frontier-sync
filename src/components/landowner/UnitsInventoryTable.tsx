@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useHubUnits, useDeleteHubUnit, type HubUnit } from "@/hooks/useHubUnits";
 import { HubUnitForm } from "./HubUnitForm";
 import { UnitInspectionDialog } from "./UnitInspectionDialog";
+import { UnitQRDialog } from "./UnitQRDialog";
 
 interface Props {
   hubId: string;
