@@ -92,8 +92,8 @@ export const HubUnitForm = ({ hubId, onClose }: Props) => {
               <Input id="carrier" value={form.carrier} onChange={(e) => set("carrier", e.target.value)} />
             </div>
             <div>
-              <Label htmlFor="in_gate_doc">In-Gate Doc #</Label>
-              <Input id="in_gate_doc" value={form.in_gate_doc} onChange={(e) => set("in_gate_doc", e.target.value)} placeholder="IGC-115492412" />
+              <Label htmlFor="in_gate_doc">In-Gate Doc # (auto)</Label>
+              <Input id="in_gate_doc" value={form.in_gate_doc} readOnly className="bg-muted/50 font-mono" />
             </div>
             <div>
               <Label htmlFor="status">Status</Label>
