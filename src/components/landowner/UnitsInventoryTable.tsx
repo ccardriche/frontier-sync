@@ -71,6 +71,7 @@ export const UnitsInventoryTable = ({ hubId, hubName }: Props) => {
                 {units.map((u) => (
                   <TableRow key={u.id}>
                     <TableCell className="font-medium">{u.unit_number}</TableCell>
+                    <TableCell className="font-mono text-xs">{u.in_gate_doc || "—"}</TableCell>
                     <TableCell className="font-mono text-xs">{u.vin || "—"}</TableCell>
                     <TableCell>{[u.year, u.make].filter(Boolean).join(" ") || "—"}</TableCell>
                     <TableCell>{u.license_plate || "—"}</TableCell>
@@ -82,7 +83,10 @@ export const UnitsInventoryTable = ({ hubId, hubName }: Props) => {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="sm" onClick={() => setInspectionUnit(u)}>
+                      <Button variant="ghost" size="sm" onClick={() => setQrUnit(u)} title="Show QR">
+                        <QrCode className="w-4 h-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => setInspectionUnit(u)} title="Inspection">
                         <ClipboardCheck className="w-4 h-4" />
                       </Button>
                       <Button
