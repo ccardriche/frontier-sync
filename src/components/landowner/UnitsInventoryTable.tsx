@@ -111,6 +111,7 @@ export const UnitsInventoryTable = ({ hubId, hubName }: Props) => {
       {inspectionUnit && (
         <UnitInspectionDialog unit={inspectionUnit} onClose={() => setInspectionUnit(null)} />
       )}
+      {qrUnit && <UnitQRDialog unit={qrUnit} onClose={() => setQrUnit(null)} />}
     </Card>
   );
 };
