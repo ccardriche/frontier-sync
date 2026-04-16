@@ -132,6 +132,14 @@ const LandownerDashboard = () => {
                 <HubCard key={hub.id} hub={hub} index={index} />
               ))}
             </div>
+
+            {hubs && hubs.length > 0 && (
+              <div className="mt-8 space-y-6">
+                {hubs.map((hub) => (
+                  <UnitsInventoryTable key={hub.id} hubId={hub.id} hubName={hub.hub_name} />
+                ))}
+              </div>
+            )}
           </motion.div>
 
           {/* Recent Activity */}
