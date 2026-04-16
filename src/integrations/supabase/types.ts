@@ -416,6 +416,71 @@ export type Database = {
         }
         Relationships: []
       }
+      hub_units: {
+        Row: {
+          carrier: string | null
+          created_at: string
+          customer: string | null
+          date_out: string | null
+          hub_id: string
+          id: string
+          in_gate_date: string | null
+          in_gate_doc: string | null
+          license_plate: string | null
+          make: string | null
+          notes: string | null
+          status: Database["public"]["Enums"]["unit_status"]
+          unit_number: string
+          updated_at: string
+          vin: string | null
+          year: number | null
+        }
+        Insert: {
+          carrier?: string | null
+          created_at?: string
+          customer?: string | null
+          date_out?: string | null
+          hub_id: string
+          id?: string
+          in_gate_date?: string | null
+          in_gate_doc?: string | null
+          license_plate?: string | null
+          make?: string | null
+          notes?: string | null
+          status?: Database["public"]["Enums"]["unit_status"]
+          unit_number: string
+          updated_at?: string
+          vin?: string | null
+          year?: number | null
+        }
+        Update: {
+          carrier?: string | null
+          created_at?: string
+          customer?: string | null
+          date_out?: string | null
+          hub_id?: string
+          id?: string
+          in_gate_date?: string | null
+          in_gate_doc?: string | null
+          license_plate?: string | null
+          make?: string | null
+          notes?: string | null
+          status?: Database["public"]["Enums"]["unit_status"]
+          unit_number?: string
+          updated_at?: string
+          vin?: string | null
+          year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hub_units_hub_id_fkey"
+            columns: ["hub_id"]
+            isOneToOne: false
+            referencedRelation: "hub_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       job_stops: {
         Row: {
           completed_at: string | null
@@ -1025,6 +1090,191 @@ export type Database = {
           },
         ]
       }
+      unit_inspections: {
+        Row: {
+          additional_photo_urls: string[] | null
+          all_lights_working: boolean | null
+          brake_lf_condition:
+            | Database["public"]["Enums"]["tire_brake_condition"]
+            | null
+          brake_lf_tread: number | null
+          brake_lr_condition:
+            | Database["public"]["Enums"]["tire_brake_condition"]
+            | null
+          brake_lr_tread: number | null
+          brake_rf_condition:
+            | Database["public"]["Enums"]["tire_brake_condition"]
+            | null
+          brake_rf_tread: number | null
+          brake_rr_condition:
+            | Database["public"]["Enums"]["tire_brake_condition"]
+            | null
+          brake_rr_tread: number | null
+          created_at: string
+          damage_amount_cents: number | null
+          damage_description: string | null
+          damage_status: Database["public"]["Enums"]["damage_status"]
+          driver_company: string | null
+          driver_email: string | null
+          driver_license_photo_url: string | null
+          driver_name: string | null
+          estimate_file_url: string | null
+          fhwa_status: Database["public"]["Enums"]["fhwa_status"] | null
+          id: string
+          inspector_id: string
+          no_drivers_license_photo: boolean | null
+          non_damage_amount_cents: number | null
+          notes: string | null
+          po_not_to_exceed_cents: number | null
+          po_number: string | null
+          po_special_instructions: string | null
+          send_back_to_vendor: boolean | null
+          tire_lf_condition:
+            | Database["public"]["Enums"]["tire_brake_condition"]
+            | null
+          tire_lf_tread: number | null
+          tire_lr_condition:
+            | Database["public"]["Enums"]["tire_brake_condition"]
+            | null
+          tire_lr_tread: number | null
+          tire_rf_condition:
+            | Database["public"]["Enums"]["tire_brake_condition"]
+            | null
+          tire_rf_tread: number | null
+          tire_rr_condition:
+            | Database["public"]["Enums"]["tire_brake_condition"]
+            | null
+          tire_rr_tread: number | null
+          total_estimate_cents: number | null
+          unit_id: string
+          updated_at: string
+        }
+        Insert: {
+          additional_photo_urls?: string[] | null
+          all_lights_working?: boolean | null
+          brake_lf_condition?:
+            | Database["public"]["Enums"]["tire_brake_condition"]
+            | null
+          brake_lf_tread?: number | null
+          brake_lr_condition?:
+            | Database["public"]["Enums"]["tire_brake_condition"]
+            | null
+          brake_lr_tread?: number | null
+          brake_rf_condition?:
+            | Database["public"]["Enums"]["tire_brake_condition"]
+            | null
+          brake_rf_tread?: number | null
+          brake_rr_condition?:
+            | Database["public"]["Enums"]["tire_brake_condition"]
+            | null
+          brake_rr_tread?: number | null
+          created_at?: string
+          damage_amount_cents?: number | null
+          damage_description?: string | null
+          damage_status?: Database["public"]["Enums"]["damage_status"]
+          driver_company?: string | null
+          driver_email?: string | null
+          driver_license_photo_url?: string | null
+          driver_name?: string | null
+          estimate_file_url?: string | null
+          fhwa_status?: Database["public"]["Enums"]["fhwa_status"] | null
+          id?: string
+          inspector_id: string
+          no_drivers_license_photo?: boolean | null
+          non_damage_amount_cents?: number | null
+          notes?: string | null
+          po_not_to_exceed_cents?: number | null
+          po_number?: string | null
+          po_special_instructions?: string | null
+          send_back_to_vendor?: boolean | null
+          tire_lf_condition?:
+            | Database["public"]["Enums"]["tire_brake_condition"]
+            | null
+          tire_lf_tread?: number | null
+          tire_lr_condition?:
+            | Database["public"]["Enums"]["tire_brake_condition"]
+            | null
+          tire_lr_tread?: number | null
+          tire_rf_condition?:
+            | Database["public"]["Enums"]["tire_brake_condition"]
+            | null
+          tire_rf_tread?: number | null
+          tire_rr_condition?:
+            | Database["public"]["Enums"]["tire_brake_condition"]
+            | null
+          tire_rr_tread?: number | null
+          total_estimate_cents?: number | null
+          unit_id: string
+          updated_at?: string
+        }
+        Update: {
+          additional_photo_urls?: string[] | null
+          all_lights_working?: boolean | null
+          brake_lf_condition?:
+            | Database["public"]["Enums"]["tire_brake_condition"]
+            | null
+          brake_lf_tread?: number | null
+          brake_lr_condition?:
+            | Database["public"]["Enums"]["tire_brake_condition"]
+            | null
+          brake_lr_tread?: number | null
+          brake_rf_condition?:
+            | Database["public"]["Enums"]["tire_brake_condition"]
+            | null
+          brake_rf_tread?: number | null
+          brake_rr_condition?:
+            | Database["public"]["Enums"]["tire_brake_condition"]
+            | null
+          brake_rr_tread?: number | null
+          created_at?: string
+          damage_amount_cents?: number | null
+          damage_description?: string | null
+          damage_status?: Database["public"]["Enums"]["damage_status"]
+          driver_company?: string | null
+          driver_email?: string | null
+          driver_license_photo_url?: string | null
+          driver_name?: string | null
+          estimate_file_url?: string | null
+          fhwa_status?: Database["public"]["Enums"]["fhwa_status"] | null
+          id?: string
+          inspector_id?: string
+          no_drivers_license_photo?: boolean | null
+          non_damage_amount_cents?: number | null
+          notes?: string | null
+          po_not_to_exceed_cents?: number | null
+          po_number?: string | null
+          po_special_instructions?: string | null
+          send_back_to_vendor?: boolean | null
+          tire_lf_condition?:
+            | Database["public"]["Enums"]["tire_brake_condition"]
+            | null
+          tire_lf_tread?: number | null
+          tire_lr_condition?:
+            | Database["public"]["Enums"]["tire_brake_condition"]
+            | null
+          tire_lr_tread?: number | null
+          tire_rf_condition?:
+            | Database["public"]["Enums"]["tire_brake_condition"]
+            | null
+          tire_rf_tread?: number | null
+          tire_rr_condition?:
+            | Database["public"]["Enums"]["tire_brake_condition"]
+            | null
+          tire_rr_tread?: number | null
+          total_estimate_cents?: number | null
+          unit_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unit_inspections_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "hub_units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -1106,7 +1356,9 @@ export type Database = {
         | "same_day_deliveries"
         | "furniture_light"
         | "appliances_small"
+      damage_status: "no_damage" | "damaged"
       fee_model: "per_checkin" | "daily" | "monthly" | "free"
+      fhwa_status: "current" | "expired" | "none"
       hub_type: "micro_hub" | "transit_stop"
       job_status:
         | "posted"
@@ -1121,6 +1373,13 @@ export type Database = {
         | "cancelled"
       license_type: "standard" | "cdl"
       ticket_status: "open" | "in_progress" | "resolved" | "closed"
+      tire_brake_condition:
+        | "ok"
+        | "cracked"
+        | "oil_soaked"
+        | "corrosion"
+        | "bad_other"
+      unit_status: "in_yard" | "out" | "on_hold" | "damaged"
       vehicle_type:
         | "car"
         | "pickup_truck"
@@ -1302,7 +1561,9 @@ export const Constants = {
         "furniture_light",
         "appliances_small",
       ],
+      damage_status: ["no_damage", "damaged"],
       fee_model: ["per_checkin", "daily", "monthly", "free"],
+      fhwa_status: ["current", "expired", "none"],
       hub_type: ["micro_hub", "transit_stop"],
       job_status: [
         "posted",
@@ -1318,6 +1579,14 @@ export const Constants = {
       ],
       license_type: ["standard", "cdl"],
       ticket_status: ["open", "in_progress", "resolved", "closed"],
+      tire_brake_condition: [
+        "ok",
+        "cracked",
+        "oil_soaked",
+        "corrosion",
+        "bad_other",
+      ],
+      unit_status: ["in_yard", "out", "on_hold", "damaged"],
       vehicle_type: [
         "car",
         "pickup_truck",
