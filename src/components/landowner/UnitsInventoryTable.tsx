@@ -57,6 +57,7 @@ export const UnitsInventoryTable = ({ hubId, hubName }: Props) => {
               <TableHeader>
                 <TableRow>
                   <TableHead>Unit No.</TableHead>
+                  <TableHead>In-Gate Doc</TableHead>
                   <TableHead>VIN</TableHead>
                   <TableHead>Year/Make</TableHead>
                   <TableHead>Plate</TableHead>
