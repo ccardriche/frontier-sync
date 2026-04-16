@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, ClipboardCheck, Trash2 } from "lucide-react";
+import { Plus, ClipboardCheck, Trash2, QrCode } from "lucide-react";
 import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useHubUnits, useDeleteHubUnit, type HubUnit } from "@/hooks/useHubUnits";
 import { HubUnitForm } from "./HubUnitForm";
 import { UnitInspectionDialog } from "./UnitInspectionDialog";
+import { UnitQRDialog } from "./UnitQRDialog";
 
 interface Props {
   hubId: string;
@@ -27,6 +28,7 @@ export const UnitsInventoryTable = ({ hubId, hubName }: Props) => {
   const deleteUnit = useDeleteHubUnit();
   const [showForm, setShowForm] = useState(false);
   const [inspectionUnit, setInspectionUnit] = useState<HubUnit | null>(null);
+  const [qrUnit, setQrUnit] = useState<HubUnit | null>(null);
 
   return (
     <Card variant="glass">
@@ -55,6 +57,7 @@ export const UnitsInventoryTable = ({ hubId, hubName }: Props) => {
               <TableHeader>
                 <TableRow>
                   <TableHead>Unit No.</TableHead>
+                  <TableHead>In-Gate Doc</TableHead>
                   <TableHead>VIN</TableHead>
                   <TableHead>Year/Make</TableHead>
                   <TableHead>Plate</TableHead>
@@ -68,6 +71,7 @@ export const UnitsInventoryTable = ({ hubId, hubName }: Props) => {
                 {units.map((u) => (
                   <TableRow key={u.id}>
                     <TableCell className="font-medium">{u.unit_number}</TableCell>
+                    <TableCell className="font-mono text-xs">{u.in_gate_doc || "—"}</TableCell>
                     <TableCell className="font-mono text-xs">{u.vin || "—"}</TableCell>
                     <TableCell>{[u.year, u.make].filter(Boolean).join(" ") || "—"}</TableCell>
                     <TableCell>{u.license_plate || "—"}</TableCell>
@@ -79,7 +83,10 @@ export const UnitsInventoryTable = ({ hubId, hubName }: Props) => {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="sm" onClick={() => setInspectionUnit(u)}>
+                      <Button variant="ghost" size="sm" onClick={() => setQrUnit(u)} title="Show QR">
+                        <QrCode className="w-4 h-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => setInspectionUnit(u)} title="Inspection">
                         <ClipboardCheck className="w-4 h-4" />
                       </Button>
                       <Button
@@ -104,6 +111,7 @@ export const UnitsInventoryTable = ({ hubId, hubName }: Props) => {
       {inspectionUnit && (
         <UnitInspectionDialog unit={inspectionUnit} onClose={() => setInspectionUnit(null)} />
       )}
+      {qrUnit && <UnitQRDialog unit={qrUnit} onClose={() => setQrUnit(null)} />}
     </Card>
   );
 };

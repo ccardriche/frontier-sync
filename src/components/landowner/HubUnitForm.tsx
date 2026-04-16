@@ -13,6 +13,10 @@ interface Props {
 
 export const HubUnitForm = ({ hubId, onClose }: Props) => {
   const create = useCreateHubUnit();
+  // Auto-generate in-gate doc number: IGC-{timestamp}{random 4-digit}
+  const generateInGateDoc = () =>
+    `IGC-${Date.now().toString().slice(-8)}${Math.floor(1000 + Math.random() * 9000)}`;
+
   const [form, setForm] = useState({
     unit_number: "",
     vin: "",
@@ -22,7 +26,7 @@ export const HubUnitForm = ({ hubId, onClose }: Props) => {
     customer: "",
     carrier: "",
     in_gate_date: new Date().toISOString().split("T")[0],
-    in_gate_doc: "",
+    in_gate_doc: generateInGateDoc(),
     status: "in_yard" as const,
   });
 
@@ -88,8 +92,8 @@ export const HubUnitForm = ({ hubId, onClose }: Props) => {
               <Input id="carrier" value={form.carrier} onChange={(e) => set("carrier", e.target.value)} />
             </div>
             <div>
-              <Label htmlFor="in_gate_doc">In-Gate Doc #</Label>
-              <Input id="in_gate_doc" value={form.in_gate_doc} onChange={(e) => set("in_gate_doc", e.target.value)} placeholder="IGC-115492412" />
+              <Label htmlFor="in_gate_doc">In-Gate Doc # (auto)</Label>
+              <Input id="in_gate_doc" value={form.in_gate_doc} readOnly className="bg-muted/50 font-mono" />
             </div>
             <div>
               <Label htmlFor="status">Status</Label>
