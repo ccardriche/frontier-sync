@@ -12,6 +12,7 @@ import LandownerStatsGrid from "@/components/landowner/LandownerStatsGrid";
 import HubForm from "@/components/landowner/HubForm";
 import HubCard from "@/components/landowner/HubCard";
 import HubActivityFeed from "@/components/landowner/HubActivityFeed";
+import { UnitsInventoryTable } from "@/components/landowner/UnitsInventoryTable";
 import { useLandownerHubs } from "@/hooks/useHubs";
 
 const LandownerDashboard = () => {
