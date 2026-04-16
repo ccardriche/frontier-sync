@@ -12,6 +12,7 @@ import LandownerStatsGrid from "@/components/landowner/LandownerStatsGrid";
 import HubForm from "@/components/landowner/HubForm";
 import HubCard from "@/components/landowner/HubCard";
 import HubActivityFeed from "@/components/landowner/HubActivityFeed";
+import { UnitsInventoryTable } from "@/components/landowner/UnitsInventoryTable";
 import { useLandownerHubs } from "@/hooks/useHubs";
 
 const LandownerDashboard = () => {
@@ -131,6 +132,14 @@ const LandownerDashboard = () => {
                 <HubCard key={hub.id} hub={hub} index={index} />
               ))}
             </div>
+
+            {hubs && hubs.length > 0 && (
+              <div className="mt-8 space-y-6">
+                {hubs.map((hub) => (
+                  <UnitsInventoryTable key={hub.id} hubId={hub.id} hubName={hub.hub_name} />
+                ))}
+              </div>
+            )}
           </motion.div>
 
           {/* Recent Activity */}
