@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, ClipboardCheck, Trash2 } from "lucide-react";
+import { Plus, ClipboardCheck, Trash2, QrCode } from "lucide-react";
 import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
