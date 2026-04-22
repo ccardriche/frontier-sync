@@ -100,6 +100,7 @@ export const useRunLaneWatchNow = () => {
     onSuccess: (data: { totalImported?: number }) => {
       qc.invalidateQueries({ queryKey: ["lane-watches"] });
       qc.invalidateQueries({ queryKey: ["shipper-jobs"] });
+      qc.invalidateQueries({ queryKey: ["sync-status"] });
       toast({
         title: "Sync complete",
         description: `${data?.totalImported ?? 0} loads imported.`,
@@ -108,3 +109,42 @@ export const useRunLaneWatchNow = () => {
     onError: (e: Error) => toast({ title: "Sync failed", description: e.message, variant: "destructive" }),
   });
 };
+
+export const useRunAllLaneWatches = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.functions.invoke("sync-loads", { body: {} });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data: { totalImported?: number }) => {
+      qc.invalidateQueries({ queryKey: ["lane-watches"] });
+      qc.invalidateQueries({ queryKey: ["shipper-jobs"] });
+      qc.invalidateQueries({ queryKey: ["sync-status"] });
+      toast({
+        title: "All watches synced",
+        description: `${data?.totalImported ?? 0} loads imported across all active watches.`,
+      });
+    },
+    onError: (e: Error) => toast({ title: "Sync failed", description: e.message, variant: "destructive" }),
+  });
+};
+
+export const useSyncStatus = () => {
+  return useQuery({
+    queryKey: ["sync-status"],
+    queryFn: async () => {
+      const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const { count, error } = await supabase
+        .from("jobs")
+        .select("id", { count: "exact", head: true })
+        .neq("source", "manual")
+        .gte("imported_at", since);
+      if (error) throw error;
+      return { importedLast24h: count ?? 0 };
+    },
+    refetchInterval: 30_000,
+  });
+};
+
