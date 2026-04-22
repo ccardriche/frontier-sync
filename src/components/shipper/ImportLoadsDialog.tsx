@@ -174,6 +174,41 @@ const ImportLoadsDialog = ({ open, onOpenChange }: Props) => {
                 Public scraping is best-effort and selectors can break. If no results, try the Paste
                 Text tab with a copy-paste of the listings.
               </p>
+
+              {!isSearching && lastReason === "source_unavailable" && (
+                <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-4 space-y-3">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium">
+                        No public listings matched{" "}
+                        {origin || "anywhere"} → {destination || "anywhere"}.
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Free load boards rarely expose live data without an account. Paste a broker
+                        email or upload a CSV export — those paths use AI and work reliably.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="default" onClick={switchToPasteText}>
+                      <FileText className="w-4 h-4 mr-2" />
+                      Try Paste Text instead
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setLastReason(null);
+                        setActiveTab("csv");
+                      }}
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      Upload CSV
+                    </Button>
+                  </div>
+                </div>
+              )}
             </TabsContent>
 
             <TabsContent value="csv" className="space-y-4 pt-4">
