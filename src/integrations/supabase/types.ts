@@ -544,7 +544,9 @@ export type Database = {
           drop_label: string | null
           drop_lat: number | null
           drop_lng: number | null
+          external_ref: string | null
           id: string
+          imported_at: string | null
           max_budget_cents: number | null
           min_budget_cents: number | null
           pickup_label: string | null
@@ -554,6 +556,7 @@ export type Database = {
           scheduled_dropoff: string | null
           scheduled_pickup: string | null
           shipper_id: string
+          source: string
           status: Database["public"]["Enums"]["job_status"]
           title: string
           updated_at: string
@@ -569,7 +572,9 @@ export type Database = {
           drop_label?: string | null
           drop_lat?: number | null
           drop_lng?: number | null
+          external_ref?: string | null
           id?: string
+          imported_at?: string | null
           max_budget_cents?: number | null
           min_budget_cents?: number | null
           pickup_label?: string | null
@@ -579,6 +584,7 @@ export type Database = {
           scheduled_dropoff?: string | null
           scheduled_pickup?: string | null
           shipper_id: string
+          source?: string
           status?: Database["public"]["Enums"]["job_status"]
           title: string
           updated_at?: string
@@ -594,7 +600,9 @@ export type Database = {
           drop_label?: string | null
           drop_lat?: number | null
           drop_lng?: number | null
+          external_ref?: string | null
           id?: string
+          imported_at?: string | null
           max_budget_cents?: number | null
           min_budget_cents?: number | null
           pickup_label?: string | null
@@ -604,6 +612,7 @@ export type Database = {
           scheduled_dropoff?: string | null
           scheduled_pickup?: string | null
           shipper_id?: string
+          source?: string
           status?: Database["public"]["Enums"]["job_status"]
           title?: string
           updated_at?: string
@@ -678,6 +687,33 @@ export type Database = {
             | null
           verified_at?: string | null
           verified_by?: string | null
+        }
+        Relationships: []
+      }
+      load_imports: {
+        Row: {
+          created_at: string
+          id: string
+          jobs_created: number
+          raw_payload: Json
+          shipper_id: string
+          source: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          jobs_created?: number
+          raw_payload?: Json
+          shipper_id: string
+          source: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          jobs_created?: number
+          raw_payload?: Json
+          shipper_id?: string
+          source?: string
         }
         Relationships: []
       }
