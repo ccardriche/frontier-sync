@@ -690,6 +690,66 @@ export type Database = {
         }
         Relationships: []
       }
+      lane_watches: {
+        Row: {
+          created_at: string
+          dest_label: string | null
+          dest_radius_km: number | null
+          equipment: string | null
+          id: string
+          is_active: boolean
+          last_run_at: string | null
+          last_run_imported: number | null
+          last_run_status: string | null
+          min_rate_cents: number | null
+          name: string
+          origin_label: string | null
+          origin_radius_km: number | null
+          owner_id: string
+          sources: string[]
+          total_imported: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          dest_label?: string | null
+          dest_radius_km?: number | null
+          equipment?: string | null
+          id?: string
+          is_active?: boolean
+          last_run_at?: string | null
+          last_run_imported?: number | null
+          last_run_status?: string | null
+          min_rate_cents?: number | null
+          name: string
+          origin_label?: string | null
+          origin_radius_km?: number | null
+          owner_id: string
+          sources?: string[]
+          total_imported?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          dest_label?: string | null
+          dest_radius_km?: number | null
+          equipment?: string | null
+          id?: string
+          is_active?: boolean
+          last_run_at?: string | null
+          last_run_imported?: number | null
+          last_run_status?: string | null
+          min_rate_cents?: number | null
+          name?: string
+          origin_label?: string | null
+          origin_radius_km?: number | null
+          owner_id?: string
+          sources?: string[]
+          total_imported?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       load_imports: {
         Row: {
           created_at: string
