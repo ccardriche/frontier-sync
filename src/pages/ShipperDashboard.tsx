@@ -135,6 +135,9 @@ const ShipperDashboard = () => {
           onViewTracking={handleViewTracking}
         />
 
+        {/* Lane Watches - automated load board sync */}
+        <LaneWatchesPanel />
+
         {/* Recurring Routes Section */}
         <RecurringRoutesSection />
 
