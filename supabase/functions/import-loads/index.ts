@@ -177,11 +177,21 @@ Deno.serve(async (req) => {
     const params = body.params ?? {};
 
     let loads: NormalizedLoad[] = [];
+    let reason: "ok" | "no_matches" | "source_unavailable" = "ok";
     try {
-      if (source === "trulos") loads = await scrapeTrulos(params);
-      else if (source === "ffs") loads = await scrapeFFS(params);
-      else if (source === "text" || source === "csv") loads = await aiParseText(params.text ?? "");
-      else return json({ error: `Unknown source: ${source}` }, 400);
+      if (source === "trulos") {
+        loads = await scrapeTrulos(params);
+        // Trulos blocks scrapers in practice — treat zero results as source unavailable, not "no matches"
+        if (loads.length === 0) reason = "source_unavailable";
+      } else if (source === "ffs") {
+        loads = await scrapeFFS(params);
+        if (loads.length === 0) reason = "source_unavailable";
+      } else if (source === "text" || source === "csv") {
+        loads = await aiParseText(params.text ?? "");
+        if (loads.length === 0) reason = "no_matches";
+      } else {
+        return json({ error: `Unknown source: ${source}` }, 400);
+      }
     } catch (e) {
       if (e instanceof Response) {
         const status = e.status;
@@ -204,7 +214,7 @@ Deno.serve(async (req) => {
       jobs_created: 0,
     });
 
-    return json({ source, loads });
+    return json({ source, loads, reason });
   } catch (e) {
     console.error("import-loads error:", e);
     return json({ error: e instanceof Error ? e.message : "Unknown error" }, 500);
