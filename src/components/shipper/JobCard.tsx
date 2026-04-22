@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { MapPin, Clock, Eye, AlertCircle, Truck, Route, DollarSign } from "lucide-react";
+import { MapPin, Clock, Eye, AlertCircle, Truck, Route, DollarSign, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -79,6 +79,20 @@ const JobCard = ({ job, index }: JobCardProps) => {
                     <Badge variant="bidding">Open Bid</Badge>
                   ) : (
                     <Badge variant="assigned">Fixed Rate</Badge>
+                  )}
+                  {job.source && job.source !== "manual" && (
+                    <Badge variant="outline" className="flex items-center gap-1">
+                      <Download className="w-3 h-3" />
+                      {job.source === "trulos"
+                        ? "Trulos"
+                        : job.source === "ffs"
+                          ? "FFS"
+                          : job.source === "csv"
+                            ? "CSV"
+                            : job.source === "text"
+                              ? "Imported"
+                              : job.source}
+                    </Badge>
                   )}
                   {job.urgency && (
                     <Badge variant="warning" className="flex items-center gap-1">
