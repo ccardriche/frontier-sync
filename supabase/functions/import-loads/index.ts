@@ -214,7 +214,7 @@ Deno.serve(async (req) => {
       jobs_created: 0,
     });
 
-    return json({ source, loads });
+    return json({ source, loads, reason });
   } catch (e) {
     console.error("import-loads error:", e);
     return json({ error: e instanceof Error ? e.message : "Unknown error" }, 500);
