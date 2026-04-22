@@ -1,107 +1,43 @@
 
 
-## Plan: Auto-pull loads from external boards → live driver feed
+## Plan: Verify the auto-sync pipeline is working
 
-### Goal
-Replace the manual "Import Loads" review-and-post flow with a **scheduled background sync** that pulls from external sources every N minutes and publishes matching loads directly to the driver's "Available Jobs" feed — no shipper touch required.
+### What I found
+- ✅ `pg_cron` job `sync-loads-every-15-min` is active and last ran successfully at 02:45 UTC
+- ✅ `sync-loads` edge function booted on schedule
+- ❌ **0 rows in `lane_watches`** — the cron has nothing to do
+- ❌ **0 jobs with `source <> 'manual'`** — nothing has ever been auto-imported
+- ❌ No "From load board" indicator on the driver dashboard, so even if jobs arrived they'd be invisible as "imported"
 
-### How it works
+So the system is **working but starved**. To prove it end-to-end and make it observable, three changes:
 
-```text
-┌──────────────────────────────┐
-│ pg_cron (every 15 min)       │
-│  → calls sync-loads function │
-└────────────┬─────────────────┘
-             ↓
-┌──────────────────────────────┐
-│ sync-loads edge function     │
-│  • For each active LaneWatch │
-│  • Scrape Trulos + FFS       │
-│  • (Phase 2) DAT/123LB API   │
-│  • Dedupe by external_ref    │
-│  • Insert as jobs (status=   │
-│    'posted', source=...)     │
-└────────────┬─────────────────┘
-             ↓
-┌──────────────────────────────┐
-│ jobs table (RLS: public read)│
-└────────────┬─────────────────┘
-             ↓
-┌──────────────────────────────┐
-│ Driver Dashboard             │
-│  → useAvailableJobs() picks  │
-│    them up via realtime      │
-└──────────────────────────────┘
-```
+### 1. Seed a lane watch + run it manually
+Add a "Run all my watches now" button to the Lane Watches panel that invokes `sync-loads` immediately (no 15-min wait), then refreshes the count. After clicking:
+- `lane_watches.last_run_at` updates
+- `lane_watches.last_run_imported` shows how many came in
+- New rows appear in `jobs` with `source = 'trulos'`
 
-### Database changes
+### 2. Add a sync status strip to the Lane Watches panel
+Top-of-panel summary card showing:
+- Last cron run time (from most recent `last_run_at` across all watches)
+- Total jobs imported in last 24h (count of `jobs` where `source <> 'manual'` and `imported_at > now() - 24h`)
+- Active watch count
+- Color dot: green if last run < 30 min ago, amber 30-60 min, red > 60 min
 
-1. **New `lane_watches` table** — shipper- or admin-owned saved searches that drive the scheduler.
-   ```
-   id, owner_id, source[] (trulos|ffs|dat|123lb),
-   origin_label, origin_radius_km, dest_label, dest_radius_km,
-   equipment, min_rate_cents, is_active, last_run_at, total_imported
-   ```
-   RLS: owner read/write own; admins read all.
+### 3. Make imported jobs visible on the driver side
+On `AvailableJobCard`, when `job.source !== 'manual'`, show a small badge like **"Load board · Trulos"** next to the title so the driver (and you) can see at a glance that a card came from auto-sync vs a manual shipper post.
 
-2. **Unique index on `jobs(source, external_ref)`** — prevents duplicate inserts when the cron re-pulls the same listing.
+### Files to change
+- `src/components/shipper/LaneWatchesPanel.tsx` — add status strip + "Run all now" button
+- `src/hooks/useLaneWatches.ts` — add `useSyncStatus()` query and `useRunAllWatches()` mutation calling the `sync-loads` function
+- `src/components/driver/AvailableJobCard.tsx` — render source badge when not manual
 
-3. **New `system_shipper_id`** — a service-role-owned shipper account ("ANCHOR Marketplace") used as `shipper_id` on auto-imported jobs so RLS stays clean. Created via migration.
+### How to test after this ships
+1. Go to Shipper Dashboard → Lane Watches → create a watch (e.g. Atlanta → Dallas, source: Trulos)
+2. Click "Run all now" — see toast with imported count
+3. Status strip turns green, shows "1 imported just now" (or 0 if Trulos returned nothing — see honesty note)
+4. Switch to Driver Dashboard — any imported jobs show with the "Load board · Trulos" badge
 
-4. **Enable `pg_cron` + `pg_net`** extensions (if not already on).
-
-### Edge function: `sync-loads`
-
-- Scheduled by `pg_cron` every 15 min.
-- Loads all `is_active = true` lane watches.
-- For each watch, calls each enabled source adapter:
-  - **trulos** — existing scraper (best-effort).
-  - **ffs** — stub for now, returns [].
-  - **dat / 123lb** — Phase 2 (BYO credentials).
-- Geocodes pickup/drop via Nominatim, computes distance.
-- Upserts into `jobs` with:
-  - `status = 'posted'`, `pricing_type = 'bid'`
-  - `shipper_id = system_shipper_id`
-  - `source`, `external_ref`, `imported_at`
-  - `min_budget_cents` derived from rate (or null)
-- Updates `lane_watches.last_run_at` + `total_imported`.
-- Inserts a `load_imports` audit row per run.
-
-### UI changes
-
-**Shipper dashboard** — replace the "Import Loads" dialog with a **"Lane Watches"** management panel:
-- List of active watches (origin → dest, sources, last run, imports today).
-- Add/edit/pause/delete watches.
-- Manual "Run now" button per watch.
-- Existing `ImportLoadsDialog` → repurposed as a one-off / preview tool inside the watch editor.
-
-**Driver dashboard** — no UI changes required. Auto-imported jobs already flow into `useAvailableJobs()` because they share the `jobs` table. Optional: small "From load board" badge on cards where `source !== 'manual'` (already added in earlier phase).
-
-### Files to add / change
-
-**New**
-- `supabase/migrations/<ts>_lane_watches_and_cron.sql` — table, unique index, system shipper seed, pg_cron job
-- `supabase/functions/sync-loads/index.ts` — scheduled sync entry point
-- `src/components/shipper/LaneWatchesPanel.tsx`
-- `src/components/shipper/LaneWatchForm.tsx`
-- `src/hooks/useLaneWatches.ts`
-
-**Edit**
-- `src/pages/ShipperDashboard.tsx` — swap "Import Loads" button for "Lane Watches" panel
-- `src/components/shipper/JobCard.tsx` — already shows source badge, no change
-- `supabase/functions/import-loads/index.ts` — keep for ad-hoc/manual paste; reused by watch "Run now"
-
-### Honesty notes
-
-- **Free scrapers stay unreliable.** Trulos returns near-zero results in practice. The pipeline is correct; the data quality is what it is until paid APIs (DAT/123LB) are wired in Phase 2.
-- **Auto-publishing means jobs appear under a system "ANCHOR Marketplace" shipper**, not a real customer. Drivers bidding on these need a clear flow for who actually pays — out of scope for this step but worth flagging.
-- **Cron interval = 15 min** to stay polite on public sites and avoid rate-limit issues. Adjustable.
-
-### What we're NOT doing this round
-- No paid DAT / 123Loadboard / Truckstop API integration (Phase 2).
-- No automatic driver assignment — drivers still bid or accept fixed rates as today.
-- No payment routing for marketplace-sourced loads.
-
-### Recommended next step after this ships
-Add **DAT One BYO-API-key** so a shipper with a real DAT subscription can plug in and the cron pulls live, high-quality loads instead of scraping.
+### Honesty note
+Trulos scraping returns near-zero results in practice (we hit this earlier). Even with the pipeline proven working, you'll likely see **0 jobs imported** until a paid board (DAT/123LB) is wired in Phase 2. The status strip will at least make that obvious — "Last run succeeded, 0 imported" is very different from "broken."
 
