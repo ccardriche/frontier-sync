@@ -1,96 +1,138 @@
 
 
-## Plan: Drop-off Time, Distance Calculation, and Fixed Rate vs Bidding
+## Plan: Import Loads from External Load Boards (Shipper Side)
 
-### Overview
-This plan adds three major features to the shipper job creation flow:
-1. **Required drop-off date/time** on the job form
-2. **Automatic distance calculation** displayed across all dashboards (shipper, driver, admin)
-3. **Pricing mode choice**: shipper can set a "Fixed Rate" or choose "Open for Bidding" with a max and min price range
+### Goal
+Let shippers pull existing freight postings from public/free load boards (123Loadboard, DAT free feeds, Trulos, etc.) into ANCHOR as draft jobs they can review, edit, and post — instead of typing every load by hand.
 
 ---
 
-### 1. Database Migration
+### Reality check on "free" load boards
 
-Add new columns to the `jobs` table:
+Most major US load boards are **not openly accessible**:
 
-| Column | Type | Purpose |
-|--------|------|---------|
-| `scheduled_dropoff` | `timestamptz` | Required drop-off deadline |
-| `distance_km` | `numeric` | Calculated distance between pickup and drop-off |
-| `pricing_type` | `text` (default `'bid'`) | Either `'fixed'` or `'bid'` |
-| `max_budget_cents` | `bigint` | For bidding mode: highest price willing to pay |
-| `min_budget_cents` | `bigint` | For bidding mode: lowest price willing to accept |
+| Source | Access | Use in Phase 1? |
+|---|---|---|
+| **123Loadboard** | Paid subscription + partner API (no public free API) | No — requires user account + API key |
+| **DAT One** | Paid + OAuth API for subscribers | No — phase 2 (BYO credentials) |
+| **Truckstop.com** | Paid + REST API for subscribers | No — phase 2 |
+| **Trulos** | Public free listings on website | Yes — scrape |
+| **FreeFreightSearch** | Public free listings | Yes — scrape |
+| **DOT/FMCSA SAFER** | Public, free | Carrier verification only |
+| **CSV / Email forwards** | Universal | Yes — manual import |
 
-The existing `budget_cents` column will be used for "fixed rate" amounts.
-
----
-
-### 2. Job Form Updates (`src/components/shipper/JobForm.tsx`)
-
-- Add a **required "Drop-off Date/Time"** field (datetime-local input) below the pickup date
-- Add a **"Pricing Mode" toggle/radio**: "Fixed Rate" vs "Open for Bidding"
-  - **Fixed Rate**: shows a single budget input field; job posts with status `assigned` flow (no bidding)
-  - **Open for Bidding**: shows two fields -- "Maximum Price" and "Minimum Price"; job posts with status `posted` (goes to bidding marketplace)
-- **Auto-calculate distance** using the existing `calculateDistance()` from `src/lib/eta.ts` when both pickup and drop-off locations are set; display it on the form as a read-only info line
-- Store `distance_km`, `pricing_type`, `scheduled_dropoff`, `max_budget_cents`, `min_budget_cents` in the job record on submit
-- Validate that drop-off date is provided and is after pickup date
+So the plan is **3 phases**, starting with what's actually free.
 
 ---
 
-### 3. Distance Display Across Dashboards
+### Phase 1 — Free sources (scrape + CSV import)
 
-**Shipper side** (`JobCard.tsx`):
-- Show distance (e.g., "245 km") alongside the route label
+**1. New "Import Loads" button** on the Shipper Dashboard, next to "Post New Job", opens a dialog with three tabs:
+- **From Load Board** — pick a free source (Trulos, FreeFreightSearch), enter origin/destination/radius, click Search
+- **From CSV** — upload a CSV/XLSX exported from any load board, map columns to ANCHOR fields
+- **From Email/Text** — paste raw load text (broker email blast); AI parses it into structured fields
 
-**Driver side** (`AvailableJobCard.tsx`, `DriverBidsPortal.tsx`):
-- Show distance on each job card
-- For bidding jobs, display the shipper's min-max price range instead of a single budget
+**2. New edge function `import-loads`** (Deno):
+- Accepts `{ source: "trulos" | "ffs" | "csv" | "text", params }`
+- For scrape sources: server-side `fetch` of the public results page → parse HTML with a lightweight DOM library → return normalized loads
+- For text/CSV: forwards to Lovable AI Gateway (`google/gemini-2.5-flash`) with a strict JSON schema to extract `{ pickup, drop, weight, rate, pickup_date, equipment, contact }`
+- Rate-limited per-shipper (10 imports / min) to stay polite to source sites
 
-**Admin side** (`JobsOversightTable.tsx`):
-- Add a "Distance" column showing the `distance_km` value
+**3. Import review screen**:
+- Shows imported loads as a table with checkboxes
+- Each row is editable inline (rate, dates, notes)
+- "Geocode + Import Selected" → for each row: Nominatim lookup of pickup/drop → distance via existing `calculateDistance()` → insert as `jobs` row with `status='posted'`, `pricing_type='bid'` defaults, and a new `source` field tagging origin
 
----
-
-### 4. Bidding Flow Changes
-
-- When `pricing_type = 'bid'`, the driver sees the shipper's acceptable range (min - max) and submits a bid within that range
-- When `pricing_type = 'fixed'`, the job card shows "Fixed Rate: $X" and the driver can accept it directly (no bidding needed) -- this could be handled as a single-click accept that auto-creates a bid at the fixed price
-- The `AvailableJobCard` bid form will validate that the bid amount falls within the min/max range for bidding jobs
-
----
-
-### 5. Seed/Demo Data Updates (`src/lib/seedData.ts`)
-
-- Add `distance_km`, `pricing_type`, `scheduled_dropoff`, `max_budget_cents`, `min_budget_cents` to `mockJobs` entries so demo mode displays correctly
-
----
-
-### Technical Details
-
-**Files to modify:**
-- `src/components/shipper/JobForm.tsx` -- add drop-off date, pricing mode toggle, distance preview, new fields
-- `src/hooks/useJobs.ts` -- pass new fields in `useCreateJob`, update types
-- `src/components/shipper/JobCard.tsx` -- display distance and pricing type badge
-- `src/components/driver/AvailableJobCard.tsx` -- show distance, price range, validate bid range
-- `src/pages/DriverBidsPortal.tsx` -- show distance and price range on job listings
-- `src/components/shipper/StatsGrid.tsx` -- no changes needed
-- `src/components/driver/DriverStatsGrid.tsx` -- no changes needed  
-- `src/components/admin/JobsOversightTable.tsx` -- add distance column
-- `src/pages/ShipperBidsPortal.tsx` -- show pricing type info on bid cards
-- `src/components/shipper/BidsSheet.tsx` -- show price range context for bid jobs
-- `src/lib/seedData.ts` -- update mock data with new fields
-- `src/components/shipper/RecurringRouteForm.tsx` -- add pricing mode to recurring templates (optional, can be deferred)
-
-**Database migration SQL:**
+**4. Database migration**:
 ```sql
-ALTER TABLE public.jobs 
-  ADD COLUMN scheduled_dropoff timestamptz,
-  ADD COLUMN distance_km numeric,
-  ADD COLUMN pricing_type text NOT NULL DEFAULT 'bid',
-  ADD COLUMN max_budget_cents bigint,
-  ADD COLUMN min_budget_cents bigint;
+ALTER TABLE public.jobs
+  ADD COLUMN source text DEFAULT 'manual',          -- 'manual' | 'trulos' | 'ffs' | 'csv' | 'text' | 'dat' | '123lb'
+  ADD COLUMN external_ref text,                     -- original load ID from source
+  ADD COLUMN imported_at timestamptz;
+
+CREATE TABLE public.load_imports (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  shipper_id uuid NOT NULL,
+  source text NOT NULL,
+  raw_payload jsonb NOT NULL,
+  jobs_created int DEFAULT 0,
+  created_at timestamptz DEFAULT now()
+);
+ALTER TABLE public.load_imports ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Shippers see own imports" ON public.load_imports
+  FOR SELECT USING (auth.uid() = shipper_id);
+CREATE POLICY "Shippers create own imports" ON public.load_imports
+  FOR INSERT WITH CHECK (auth.uid() = shipper_id);
 ```
 
-**Distance calculation** uses the existing `calculateDistance()` function from `src/lib/eta.ts` (Haversine formula). It will be computed client-side when both locations are selected and stored in the database for display on other dashboards.
+---
+
+### Phase 2 — Bring-Your-Own-Credentials (paid boards)
+
+For shippers who already pay for DAT / 123Loadboard / Truckstop:
+
+- New **Settings → Load Board Connections** page
+- Per-shipper encrypted storage of API keys/OAuth tokens in a `load_board_connections` table (RLS, row-encrypted via pgsodium or stored as Supabase secret per user)
+- Edge function adapters: `dat-adapter`, `123lb-adapter`, `truckstop-adapter` — each implements the same `searchLoads(params)` interface used by Phase 1
+- Same import review UI — just more sources in the dropdown
+
+---
+
+### Phase 3 — Scheduled auto-import
+
+- Shippers save a "Lane Watch" (origin radius → destination radius, equipment, min rate)
+- pg_cron job runs every 30 min, calls `import-loads` per saved watch, drops new matches into a "Pending Review" queue with toast notification
+
+---
+
+### UX flow
+
+```text
+Shipper Dashboard
+   └── [Import Loads] button
+        └── Import Dialog
+             ├── Tab: Load Board   → form (origin, dest, radius, equipment) → Search
+             ├── Tab: CSV Upload   → drop file → column mapping
+             └── Tab: Paste Text   → textarea → AI extract
+                  ↓
+            Review Table (editable rows, checkboxes)
+                  ↓
+            [Import N Selected] → geocode → insert jobs (status=posted)
+                  ↓
+            Toast "Imported 7 loads" → dashboard refreshes
+```
+
+---
+
+### Files to add / change
+
+**New:**
+- `supabase/migrations/<ts>_load_imports.sql`
+- `supabase/functions/import-loads/index.ts` (scrape + AI parse)
+- `src/components/shipper/ImportLoadsDialog.tsx`
+- `src/components/shipper/ImportReviewTable.tsx`
+- `src/hooks/useLoadImport.ts`
+- `src/lib/loadboardAdapters/trulos.ts`, `freeFreightSearch.ts`, `csvParser.ts`
+
+**Edit:**
+- `src/pages/ShipperDashboard.tsx` — add "Import Loads" button next to "Post New Job"
+- `src/integrations/supabase/types.ts` — auto-regenerated after migration
+- `src/components/shipper/JobCard.tsx` — show small "Imported from Trulos" badge when `source !== 'manual'`
+
+---
+
+### Legal & technical notes
+
+- Scraping public HTML pages is permitted but fragile — selectors break when sites redesign. We add a parser version field and graceful "couldn't parse, paste text instead" fallback.
+- Respect each source's `robots.txt` and add a 2 s delay between requests in the edge function.
+- Never store credentials for paid boards in client code — Phase 2 uses Supabase secrets per shipper.
+- Lovable AI is used for the "paste text" path (no extra API key needed).
+
+---
+
+### What you decide before we build
+
+1. **Start with Phase 1 only?** (Trulos scrape + CSV + AI text paste) — recommended, ships in one pass.
+2. **Which free sources first?** Trulos + FreeFreightSearch are the realistic pair.
+3. **Phase 2 boards priority?** DAT, 123Loadboard, or Truckstop first when we get there.
 
