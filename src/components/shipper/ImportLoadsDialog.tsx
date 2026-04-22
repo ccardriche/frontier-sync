@@ -115,7 +115,7 @@ const ImportLoadsDialog = ({ open, onOpenChange }: Props) => {
             }}
           />
         ) : (
-          <Tabs defaultValue="board" className="w-full">
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)} className="w-full">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="board">
                 <Globe className="w-4 h-4 mr-2" />
