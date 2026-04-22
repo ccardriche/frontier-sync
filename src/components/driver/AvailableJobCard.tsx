@@ -115,6 +115,11 @@ const AvailableJobCard = ({ job, index, isSelected, onSelect }: AvailableJobCard
                 ) : (
                   <Badge variant="bidding">Open Bid</Badge>
                 )}
+                {job.source && job.source !== "manual" && (
+                  <Badge variant="outline" className="capitalize">
+                    Load board · {job.source}
+                  </Badge>
+                )}
               </div>
               <div className="flex flex-wrap gap-4 text-sm text-muted-foreground mb-2">
                 {(job.pickup_label || job.drop_label) && (
