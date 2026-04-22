@@ -39,8 +39,11 @@ async function geocode(label: string): Promise<{ lat: number; lng: number } | nu
   }
 }
 
+export type ImportReason = "ok" | "no_matches" | "source_unavailable" | null;
+
 export const useLoadImportSearch = () => {
   const [loads, setLoads] = useState<ImportedLoad[]>([]);
+  const [lastReason, setLastReason] = useState<ImportReason>(null);
 
   const mutation = useMutation({
     mutationFn: async ({ source, params }: SearchParams) => {
@@ -49,25 +52,45 @@ export const useLoadImportSearch = () => {
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-      return (data?.loads ?? []) as ImportedLoad[];
+      return {
+        loads: (data?.loads ?? []) as ImportedLoad[],
+        reason: (data?.reason ?? "ok") as Exclude<ImportReason, null>,
+      };
     },
-    onSuccess: (data) => {
+    onSuccess: ({ loads: data, reason }) => {
       setLoads(data);
+      setLastReason(reason);
       if (data.length === 0) {
-        toast({
-          title: "No loads found",
-          description: "Try a different search or paste raw text instead.",
-        });
+        if (reason === "source_unavailable") {
+          toast({
+            title: "Load board unavailable",
+            description: "Public scraping returned no data. Try Paste Text or CSV instead.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "No loads found",
+            description: "Try a different search or paste raw text instead.",
+          });
+        }
       } else {
         toast({ title: `Found ${data.length} loads`, description: "Review and import below." });
       }
     },
     onError: (err: Error) => {
+      setLastReason(null);
       toast({ title: "Import failed", description: err.message, variant: "destructive" });
     },
   });
 
-  return { loads, setLoads, search: mutation.mutate, isSearching: mutation.isPending };
+  return {
+    loads,
+    setLoads,
+    search: mutation.mutate,
+    isSearching: mutation.isPending,
+    lastReason,
+    setLastReason,
+  };
 };
 
 export const useImportSelectedLoads = () => {
