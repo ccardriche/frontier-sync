@@ -88,7 +88,7 @@ export const useImportSelectedLoads = () => {
         ]);
 
         const distance =
-          pickup && drop ? calculateDistance(pickup.lat, pickup.lng, drop.lat, drop.lng) : null;
+          pickup && drop ? calculateDistance(pickup, drop) : null;
 
         const rateCents = load.rate_usd ? Math.round(load.rate_usd * 100) : null;
         const weightKg = load.weight_lbs ? Math.round(load.weight_lbs * 0.453592) : null;
