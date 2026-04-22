@@ -11,6 +11,7 @@ import StatsGrid from "@/components/shipper/StatsGrid";
 import JobForm from "@/components/shipper/JobForm";
 import JobCard from "@/components/shipper/JobCard";
 import RecurringRoutesSection from "@/components/shipper/RecurringRoutesSection";
+import LaneWatchesPanel from "@/components/shipper/LaneWatchesPanel";
 import ImportLoadsDialog from "@/components/shipper/ImportLoadsDialog";
 import InTransitSection from "@/components/shipper/InTransitSection";
 import TrackingDialog from "@/components/shipper/TrackingDialog";
