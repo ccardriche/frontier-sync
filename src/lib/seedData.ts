@@ -825,6 +825,9 @@ export const mockAllUsers = [
 export const mockAdminJobs = [
   ...mockJobs.map((job) => ({
     ...job,
+    source: "manual" as const,
+    external_ref: null,
+    imported_at: null,
     bids: [{ count: Math.floor(Math.random() * 10) }],
   })),
   {
@@ -851,6 +854,9 @@ export const mockAdminJobs = [
     min_budget_cents: null,
     created_at: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
     updated_at: new Date().toISOString(),
+    source: "manual" as const,
+    external_ref: null,
+    imported_at: null,
     bids: [{ count: 5 }],
   },
   {
@@ -877,6 +883,9 @@ export const mockAdminJobs = [
     min_budget_cents: 800000,
     created_at: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
     updated_at: new Date().toISOString(),
+    source: "manual" as const,
+    external_ref: null,
+    imported_at: null,
     bids: [{ count: 8 }],
   },
 ];

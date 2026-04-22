@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
-import { Plus, Filter, Bell, User, Package, LogOut, Gavel } from "lucide-react";
+import { Plus, Filter, Bell, User, Package, LogOut, Gavel, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +11,7 @@ import StatsGrid from "@/components/shipper/StatsGrid";
 import JobForm from "@/components/shipper/JobForm";
 import JobCard from "@/components/shipper/JobCard";
 import RecurringRoutesSection from "@/components/shipper/RecurringRoutesSection";
+import ImportLoadsDialog from "@/components/shipper/ImportLoadsDialog";
 import InTransitSection from "@/components/shipper/InTransitSection";
 import TrackingDialog from "@/components/shipper/TrackingDialog";
 import { useShipperJobs } from "@/hooks/useJobs";
@@ -21,6 +22,7 @@ import { useShipperJobNotifications } from "@/hooks/useJobStatusNotifications";
 const ShipperDashboard = () => {
   const navigate = useNavigate();
   const [showNewJob, setShowNewJob] = useState(false);
+  const [showImport, setShowImport] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [trackingJobId, setTrackingJobId] = useState<string | null>(null);
   const { data: jobs, isLoading, error } = useShipperJobs();
@@ -88,6 +90,15 @@ const ShipperDashboard = () => {
           >
             <Plus className="w-5 h-5" />
             Post New Job
+          </Button>
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={() => setShowImport(true)}
+            className="shrink-0"
+          >
+            <Download className="w-5 h-5" />
+            Import Loads
           </Button>
           <Button
             variant="outline"
@@ -193,6 +204,9 @@ const ShipperDashboard = () => {
         open={!!trackingJobId}
         onOpenChange={(open) => !open && setTrackingJobId(null)}
       />
+
+      {/* Import Loads Dialog */}
+      <ImportLoadsDialog open={showImport} onOpenChange={setShowImport} />
 
       {/* AI Assistant */}
       <AIAssistant />
