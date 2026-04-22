@@ -29,8 +29,9 @@ interface Props {
 }
 
 const ImportLoadsDialog = ({ open, onOpenChange }: Props) => {
-  const { loads, setLoads, search, isSearching } = useLoadImportSearch();
+  const { loads, setLoads, search, isSearching, lastReason, setLastReason } = useLoadImportSearch();
   const [activeSource, setActiveSource] = useState<ImportSource>("trulos");
+  const [activeTab, setActiveTab] = useState<"board" | "csv" | "text">("board");
 
   // Load Board tab state
   const [boardSource, setBoardSource] = useState<"trulos" | "ffs">("trulos");
@@ -43,6 +44,7 @@ const ImportLoadsDialog = ({ open, onOpenChange }: Props) => {
 
   const reset = () => {
     setLoads([]);
+    setLastReason(null);
     setRawText("");
     setOrigin("");
     setDestination("");
@@ -51,6 +53,17 @@ const ImportLoadsDialog = ({ open, onOpenChange }: Props) => {
   const handleClose = (next: boolean) => {
     if (!next) reset();
     onOpenChange(next);
+  };
+
+  const switchToPasteText = () => {
+    const lane = origin || destination ? `${origin || "?"} → ${destination || "?"}, ` : "";
+    setRawText(
+      (prev) =>
+        prev ||
+        `${lane}45,000 lbs dry van, $2,400, pickup tomorrow, contact Mike 555-1234`,
+    );
+    setLastReason(null);
+    setActiveTab("text");
   };
 
   const handleBoardSearch = () => {
