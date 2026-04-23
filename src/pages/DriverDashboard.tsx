@@ -29,6 +29,10 @@ const DriverDashboard = () => {
   const [selectedJob, setSelectedJob] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [showEarnings, setShowEarnings] = useState(false);
+  const [activeTab, setActiveTab] = useState<"anchor" | "all">("anchor");
+  const [filters, setFilters] = useState<LoadFilterState>({
+    origin: "", destination: "", pickupDate: "", equipment: "", minRate: "", source: "",
+  });
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -37,7 +41,8 @@ const DriverDashboard = () => {
 
   const { data: jobs, isLoading, error } = useAvailableJobs();
   const { data: stats } = useDriverStats();
-  
+  const { data: externalLoads, isLoading: extLoading } = useExternalLoads();
+
   // Enable real-time job status notifications
   useDriverJobNotifications();
 
@@ -50,6 +55,23 @@ const DriverDashboard = () => {
     job.pickup_label?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     job.drop_label?.toLowerCase().includes(searchQuery.toLowerCase())
   ) ?? [];
+
+  const sourceOptions = Array.from(new Set((externalLoads ?? []).map((l) => l.source_name)));
+  const equipmentOptions = Array.from(
+    new Set((externalLoads ?? []).map((l) => l.equipment_type).filter((x): x is string => !!x))
+  );
+
+  const filteredExternal = (externalLoads ?? []).filter((l) => {
+    const q = searchQuery.toLowerCase();
+    if (q && !`${l.title} ${l.origin_city} ${l.destination_city} ${l.broker_name}`.toLowerCase().includes(q)) return false;
+    if (filters.origin && !`${l.origin_city} ${l.origin_state}`.toLowerCase().includes(filters.origin.toLowerCase())) return false;
+    if (filters.destination && !`${l.destination_city} ${l.destination_state}`.toLowerCase().includes(filters.destination.toLowerCase())) return false;
+    if (filters.equipment && l.equipment_type !== filters.equipment) return false;
+    if (filters.source && l.source_name !== filters.source) return false;
+    if (filters.minRate && (l.rate_cents ?? 0) < Number(filters.minRate) * 100) return false;
+    if (filters.pickupDate && l.pickup_date && new Date(l.pickup_date) < new Date(filters.pickupDate)) return false;
+    return true;
+  });
 
   // Show earnings dashboard if active
   if (showEarnings) {
