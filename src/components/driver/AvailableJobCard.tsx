@@ -115,9 +115,13 @@ const AvailableJobCard = ({ job, index, isSelected, onSelect }: AvailableJobCard
                 ) : (
                   <Badge variant="bidding">Open Bid</Badge>
                 )}
-                {job.source && job.source !== "manual" && (
+                {job.source && job.source !== "manual" ? (
                   <Badge variant="outline" className="capitalize">
                     Load board · {job.source}
+                  </Badge>
+                ) : (
+                  <Badge variant="outline" className="border-primary/40 text-primary">
+                    Book in Anchor
                   </Badge>
                 )}
               </div>
