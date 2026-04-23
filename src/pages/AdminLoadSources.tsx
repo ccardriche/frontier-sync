@@ -135,7 +135,7 @@ const AdminLoadSources = () => {
                     <TableCell className="text-sm">{formatDistanceToNow(new Date(l.synced_at), { addSuffix: true })}</TableCell>
                     <TableCell>
                       {l.sync_status === "success" ? (
-                        <Badge variant="outline" className="text-green-600 border-green-600/40"><CheckCircle2 className="w-3 h-3 mr-1" />Success</Badge>
+                        <Badge variant="outline" className="text-accent border-accent/40"><CheckCircle2 className="w-3 h-3 mr-1" />Success</Badge>
                       ) : (
                         <Badge variant="outline" className="text-destructive border-destructive/40"><XCircle className="w-3 h-3 mr-1" />Failed</Badge>
                       )}

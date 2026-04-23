@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import AIAssistant from "@/components/AIAssistant";
 import DriverStatsGrid from "@/components/driver/DriverStatsGrid";
 import ActiveJobBanner from "@/components/driver/ActiveJobBanner";
@@ -16,8 +17,11 @@ import AvailableJobCard from "@/components/driver/AvailableJobCard";
 import ActiveCheckinBanner from "@/components/driver/ActiveCheckinBanner";
 import NearbyHubsSection from "@/components/driver/NearbyHubsSection";
 import CheckinHistorySheet from "@/components/driver/CheckinHistorySheet";
+import ExternalLoadCard from "@/components/driver/ExternalLoadCard";
+import LoadFilters, { type LoadFilterState } from "@/components/driver/LoadFilters";
 import { useAvailableJobs, useDriverStats } from "@/hooks/useBids";
 import { useDriverJobNotifications } from "@/hooks/useJobStatusNotifications";
+import { useExternalLoads } from "@/hooks/useExternalLoads";
 import EarningsDashboard from "@/components/driver/EarningsDashboard";
 
 const DriverDashboard = () => {

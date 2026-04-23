@@ -15,6 +15,7 @@ import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 import ShipperBidsPortal from "./pages/ShipperBidsPortal";
 import DriverBidsPortal from "./pages/DriverBidsPortal";
+import AdminLoadSources from "./pages/AdminLoadSources";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +39,7 @@ const App = () => (
           <Route path="/dashboard/admin" element={<AdminDashboard />} />
           <Route path="/dashboard/shipper/bids" element={<ShipperBidsPortal />} />
           <Route path="/dashboard/driver/bids" element={<DriverBidsPortal />} />
+          <Route path="/dashboard/admin/load-sources" element={<AdminLoadSources />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
