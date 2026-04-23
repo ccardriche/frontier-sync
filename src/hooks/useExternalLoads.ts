@@ -104,7 +104,6 @@ export const useUpsertSource = () => {
         if (error) throw error;
       }
     },
-    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["load-sources"] });
       toast({ title: "Source saved" });
