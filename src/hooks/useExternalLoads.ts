@@ -36,7 +36,7 @@ export interface LoadSource {
   api_key: string | null;
   is_active: boolean;
   sync_frequency_minutes: number;
-  field_mapping_json: Record<string, unknown> | null;
+  field_mapping_json: Record<string, string> | null;
   last_synced_at: string | null;
   created_at: string;
   updated_at: string;
@@ -103,6 +103,7 @@ export const useUpsertSource = () => {
         const { error } = await supabase.from("load_sources").insert(rest as never);
         if (error) throw error;
       }
+    },
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["load-sources"] });
