@@ -249,6 +249,96 @@ export type Database = {
           },
         ]
       }
+      external_loads: {
+        Row: {
+          broker_email: string | null
+          broker_name: string | null
+          broker_phone: string | null
+          created_at: string
+          delivery_date: string | null
+          destination_city: string | null
+          destination_lat: number | null
+          destination_lng: number | null
+          destination_state: string | null
+          equipment_type: string | null
+          external_load_id: string
+          external_url: string | null
+          id: string
+          last_synced_at: string
+          miles: number | null
+          origin_city: string | null
+          origin_lat: number | null
+          origin_lng: number | null
+          origin_state: string | null
+          pickup_date: string | null
+          rate_cents: number | null
+          raw_payload: Json | null
+          source_name: string
+          source_type: string | null
+          status: string
+          title: string | null
+          weight_lbs: number | null
+        }
+        Insert: {
+          broker_email?: string | null
+          broker_name?: string | null
+          broker_phone?: string | null
+          created_at?: string
+          delivery_date?: string | null
+          destination_city?: string | null
+          destination_lat?: number | null
+          destination_lng?: number | null
+          destination_state?: string | null
+          equipment_type?: string | null
+          external_load_id: string
+          external_url?: string | null
+          id?: string
+          last_synced_at?: string
+          miles?: number | null
+          origin_city?: string | null
+          origin_lat?: number | null
+          origin_lng?: number | null
+          origin_state?: string | null
+          pickup_date?: string | null
+          rate_cents?: number | null
+          raw_payload?: Json | null
+          source_name: string
+          source_type?: string | null
+          status?: string
+          title?: string | null
+          weight_lbs?: number | null
+        }
+        Update: {
+          broker_email?: string | null
+          broker_name?: string | null
+          broker_phone?: string | null
+          created_at?: string
+          delivery_date?: string | null
+          destination_city?: string | null
+          destination_lat?: number | null
+          destination_lng?: number | null
+          destination_state?: string | null
+          equipment_type?: string | null
+          external_load_id?: string
+          external_url?: string | null
+          id?: string
+          last_synced_at?: string
+          miles?: number | null
+          origin_city?: string | null
+          origin_lat?: number | null
+          origin_lng?: number | null
+          origin_state?: string | null
+          pickup_date?: string | null
+          rate_cents?: number | null
+          raw_payload?: Json | null
+          source_name?: string
+          source_type?: string | null
+          status?: string
+          title?: string | null
+          weight_lbs?: number | null
+        }
+        Relationships: []
+      }
       gps_logs: {
         Row: {
           accuracy_m: number | null
@@ -777,6 +867,51 @@ export type Database = {
         }
         Relationships: []
       }
+      load_sources: {
+        Row: {
+          api_key: string | null
+          auth_type: string
+          created_at: string
+          feed_url: string | null
+          field_mapping_json: Json | null
+          id: string
+          is_active: boolean
+          last_synced_at: string | null
+          source_name: string
+          source_type: string
+          sync_frequency_minutes: number
+          updated_at: string
+        }
+        Insert: {
+          api_key?: string | null
+          auth_type?: string
+          created_at?: string
+          feed_url?: string | null
+          field_mapping_json?: Json | null
+          id?: string
+          is_active?: boolean
+          last_synced_at?: string | null
+          source_name: string
+          source_type: string
+          sync_frequency_minutes?: number
+          updated_at?: string
+        }
+        Update: {
+          api_key?: string | null
+          auth_type?: string
+          created_at?: string
+          feed_url?: string | null
+          field_mapping_json?: Json | null
+          id?: string
+          is_active?: boolean
+          last_synced_at?: string | null
+          source_name?: string
+          source_type?: string
+          sync_frequency_minutes?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       pod: {
         Row: {
           delivered_at: string
@@ -1134,6 +1269,44 @@ export type Database = {
             columns: ["job_id"]
             isOneToOne: false
             referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sync_logs: {
+        Row: {
+          error_message: string | null
+          id: string
+          records_added: number
+          records_updated: number
+          source_id: string | null
+          sync_status: string
+          synced_at: string
+        }
+        Insert: {
+          error_message?: string | null
+          id?: string
+          records_added?: number
+          records_updated?: number
+          source_id?: string | null
+          sync_status: string
+          synced_at?: string
+        }
+        Update: {
+          error_message?: string | null
+          id?: string
+          records_added?: number
+          records_updated?: number
+          source_id?: string | null
+          sync_status?: string
+          synced_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sync_logs_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "load_sources"
             referencedColumns: ["id"]
           },
         ]
