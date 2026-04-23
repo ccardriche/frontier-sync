@@ -146,6 +146,9 @@ export default function AdminDashboard() {
             <TabsTrigger value="users" className="flex-1">
               Users
             </TabsTrigger>
+            <TabsTrigger value="sources" className="flex-1" asChild>
+              <a href="/dashboard/admin/load-sources">Load Sources</a>
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="approvals">

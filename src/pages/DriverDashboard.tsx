@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import AIAssistant from "@/components/AIAssistant";
 import DriverStatsGrid from "@/components/driver/DriverStatsGrid";
 import ActiveJobBanner from "@/components/driver/ActiveJobBanner";
@@ -16,8 +17,11 @@ import AvailableJobCard from "@/components/driver/AvailableJobCard";
 import ActiveCheckinBanner from "@/components/driver/ActiveCheckinBanner";
 import NearbyHubsSection from "@/components/driver/NearbyHubsSection";
 import CheckinHistorySheet from "@/components/driver/CheckinHistorySheet";
+import ExternalLoadCard from "@/components/driver/ExternalLoadCard";
+import LoadFilters, { type LoadFilterState } from "@/components/driver/LoadFilters";
 import { useAvailableJobs, useDriverStats } from "@/hooks/useBids";
 import { useDriverJobNotifications } from "@/hooks/useJobStatusNotifications";
+import { useExternalLoads } from "@/hooks/useExternalLoads";
 import EarningsDashboard from "@/components/driver/EarningsDashboard";
 
 const DriverDashboard = () => {
@@ -25,6 +29,10 @@ const DriverDashboard = () => {
   const [selectedJob, setSelectedJob] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [showEarnings, setShowEarnings] = useState(false);
+  const [activeTab, setActiveTab] = useState<"anchor" | "all">("anchor");
+  const [filters, setFilters] = useState<LoadFilterState>({
+    origin: "", destination: "", pickupDate: "", equipment: "", minRate: "", source: "",
+  });
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -33,7 +41,8 @@ const DriverDashboard = () => {
 
   const { data: jobs, isLoading, error } = useAvailableJobs();
   const { data: stats } = useDriverStats();
-  
+  const { data: externalLoads, isLoading: extLoading } = useExternalLoads();
+
   // Enable real-time job status notifications
   useDriverJobNotifications();
 
@@ -46,6 +55,23 @@ const DriverDashboard = () => {
     job.pickup_label?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     job.drop_label?.toLowerCase().includes(searchQuery.toLowerCase())
   ) ?? [];
+
+  const sourceOptions = Array.from(new Set((externalLoads ?? []).map((l) => l.source_name)));
+  const equipmentOptions = Array.from(
+    new Set((externalLoads ?? []).map((l) => l.equipment_type).filter((x): x is string => !!x))
+  );
+
+  const filteredExternal = (externalLoads ?? []).filter((l) => {
+    const q = searchQuery.toLowerCase();
+    if (q && !`${l.title} ${l.origin_city} ${l.destination_city} ${l.broker_name}`.toLowerCase().includes(q)) return false;
+    if (filters.origin && !`${l.origin_city} ${l.origin_state}`.toLowerCase().includes(filters.origin.toLowerCase())) return false;
+    if (filters.destination && !`${l.destination_city} ${l.destination_state}`.toLowerCase().includes(filters.destination.toLowerCase())) return false;
+    if (filters.equipment && l.equipment_type !== filters.equipment) return false;
+    if (filters.source && l.source_name !== filters.source) return false;
+    if (filters.minRate && (l.rate_cents ?? 0) < Number(filters.minRate) * 100) return false;
+    if (filters.pickupDate && l.pickup_date && new Date(l.pickup_date) < new Date(filters.pickupDate)) return false;
+    return true;
+  });
 
   // Show earnings dashboard if active
   if (showEarnings) {
@@ -112,7 +138,7 @@ const DriverDashboard = () => {
           transition={{ delay: 0.1 }}
         >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-            <h2 className="text-xl sm:text-2xl font-display font-bold">Available Jobs</h2>
+            <h2 className="text-xl sm:text-2xl font-display font-bold">Available Loads</h2>
             <div className="flex flex-wrap gap-2">
               <Button variant="outline" size="sm" onClick={() => navigate("/dashboard/driver/bids")}>
                 <Gavel className="w-4 h-4" />
@@ -133,57 +159,85 @@ const DriverDashboard = () => {
             </div>
           </div>
 
-          {isLoading && (
-            <div className="space-y-4">
-              {[...Array(3)].map((_, i) => (
-                <Card key={i} variant="glass">
-                  <CardContent className="p-4">
-                    <div className="flex flex-col lg:flex-row lg:items-center gap-4">
-                      <div className="flex-1 space-y-2">
-                        <Skeleton className="h-5 w-48" />
-                        <Skeleton className="h-4 w-64" />
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "anchor" | "all")}>
+            <TabsList className="mb-4">
+              <TabsTrigger value="anchor">
+                Anchor Loads
+                <Badge variant="secondary" className="ml-2">{filteredJobs.length}</Badge>
+              </TabsTrigger>
+              <TabsTrigger value="all">
+                All Loads
+                <Badge variant="secondary" className="ml-2">{filteredJobs.length + filteredExternal.length}</Badge>
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="anchor" className="space-y-4 mt-0">
+              {isLoading && (
+                <div className="space-y-4">
+                  {[...Array(3)].map((_, i) => (
+                    <Card key={i} variant="glass">
+                      <CardContent className="p-4">
+                        <Skeleton className="h-5 w-48 mb-2" />
+                        <Skeleton className="h-4 w-64 mb-2" />
                         <Skeleton className="h-4 w-32" />
-                      </div>
-                      <div className="text-right space-y-1">
-                        <Skeleton className="h-8 w-20" />
-                        <Skeleton className="h-4 w-12" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+              {error && <div className="text-center py-12 text-destructive">Failed to load jobs.</div>}
+              {!isLoading && !error && filteredJobs.length === 0 && (
+                <div className="text-center py-12">
+                  <Truck className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">
+                    {searchQuery ? "No jobs match your search" : "No Anchor jobs right now"}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-2">Switch to All Loads to see external boards.</p>
+                </div>
+              )}
+              {filteredJobs.map((job, index) => (
+                <AvailableJobCard
+                  key={job.id}
+                  job={job}
+                  index={index}
+                  isSelected={selectedJob === job.id}
+                  onSelect={() => setSelectedJob(selectedJob === job.id ? null : job.id)}
+                />
               ))}
-            </div>
-          )}
+            </TabsContent>
 
-          {error && (
-            <div className="text-center py-12">
-              <p className="text-destructive">Failed to load jobs. Please try again.</p>
-            </div>
-          )}
-
-          {!isLoading && !error && filteredJobs.length === 0 && (
-            <div className="text-center py-12">
-              <Truck className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">
-                {searchQuery ? "No jobs match your search" : "No jobs available right now"}
-              </p>
-              <p className="text-sm text-muted-foreground mt-2">
-                Check back soon for new opportunities!
-              </p>
-            </div>
-          )}
-
-          <div className="space-y-4">
-            {filteredJobs.map((job, index) => (
-              <AvailableJobCard
-                key={job.id}
-                job={job}
-                index={index}
-                isSelected={selectedJob === job.id}
-                onSelect={() => setSelectedJob(selectedJob === job.id ? null : job.id)}
+            <TabsContent value="all" className="mt-0">
+              <LoadFilters
+                value={filters}
+                onChange={setFilters}
+                sources={sourceOptions}
+                equipmentOptions={equipmentOptions}
               />
-            ))}
-          </div>
+              <div className="space-y-4">
+                {filteredJobs.map((job, index) => (
+                  <AvailableJobCard
+                    key={`a-${job.id}`}
+                    job={job}
+                    index={index}
+                    isSelected={selectedJob === job.id}
+                    onSelect={() => setSelectedJob(selectedJob === job.id ? null : job.id)}
+                  />
+                ))}
+                {extLoading && (
+                  <Card variant="glass"><CardContent className="p-4"><Skeleton className="h-20 w-full" /></CardContent></Card>
+                )}
+                {filteredExternal.map((load, i) => (
+                  <ExternalLoadCard key={load.id} load={load} index={i} />
+                ))}
+                {!extLoading && filteredJobs.length + filteredExternal.length === 0 && (
+                  <div className="text-center py-12">
+                    <Truck className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground">No loads match your filters</p>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+          </Tabs>
         </motion.div>
       </main>
 
